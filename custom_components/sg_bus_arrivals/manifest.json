@@ -1,7 +1,6 @@
 {
   "domain": "sg_bus_arrivals",
   "name": "SG Bus Arrivals",
-  "version": "v1.0.0",
   "codeowners": [
     "@hanwg"
   ],
@@ -13,5 +12,6 @@
   "quality_scale": "bronze",
   "requirements": [],
   "ssdp": [],
+  "version": "v1.0.0",
   "zeroconf": []
 }
