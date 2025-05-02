@@ -1,4 +1,4 @@
-"""Config flow for the SG Bus Arrivals integration."""
+"""Config flow for the SG Bus Arrivals integration. Configures the Account Key for the API."""
 
 from __future__ import annotations
 
@@ -10,10 +10,11 @@ import voluptuous as vol
 
 from homeassistant.config_entries import SOURCE_REAUTH, ConfigFlow, ConfigFlowResult
 from homeassistant.const import CONF_API_KEY
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 
-from . import sg_bus_arrivals_service
 from .const import DOMAIN
+from .options_flow import OptionsFlowHandler  # type: ignore  # noqa: PGH003
+from .sg_bus_arrivals_service import SgBusArrivalsService
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ async def validate_api(
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
 
-    service = sg_bus_arrivals_service.SgBusArrivalsService(hass, data[CONF_API_KEY])
+    service = SgBusArrivalsService(hass, data[CONF_API_KEY])
 
     try:
         if not await service.authenticate():
@@ -44,6 +45,12 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for SG Bus Arrivals."""
 
     VERSION = 1
+
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry):
+        """Get the options flow for this handler."""
+        return OptionsFlowHandler()
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None

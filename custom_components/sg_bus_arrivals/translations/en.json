@@ -24,5 +24,19 @@
                 }
             }
         }
+    },
+    "options": {
+        "error": {
+            "invalid_bus_stop_code": "Invalid bus stop code"
+        },
+        "step": {
+            "init": {
+                "title": "Add new bus stop",
+                "data": {
+                    "bus_stop_code": "Bus stop code"
+                },
+                "description": "5-digit bus stop code from bus stop sign"
+            }
+        }
     }
 }
