@@ -1,0 +1,28 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Device is already configured"
+        },
+        "error": {
+            "invalid_auth": "Authentication failed",
+            "unknown": "Unexpected error"
+        },
+        "step": {
+            "user": {
+                "data": {
+                    "api_key": "API Account Key"
+                }
+            },
+            "reconfigure": {
+                "data": {
+                    "api_key": "API Account Key"
+                }
+            },
+            "reauth_confirm": {
+                "data": {
+                    "api_key": "API Account Key"
+                }
+            }
+        }
+    }
+}
