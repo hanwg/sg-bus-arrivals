@@ -4,16 +4,23 @@
             "already_configured": "Device is already configured"
         },
         "error": {
-            "cannot_connect": "Failed to connect",
-            "invalid_auth": "Invalid authentication",
+            "invalid_auth": "Authentication failed",
             "unknown": "Unexpected error"
         },
         "step": {
             "user": {
                 "data": {
-                    "host": "Host",
-                    "password": "Password",
-                    "username": "Username"
+                    "api_key": "API Account Key"
+                }
+            },
+            "reconfigure": {
+                "data": {
+                    "api_key": "API Account Key"
+                }
+            },
+            "reauth_confirm": {
+                "data": {
+                    "api_key": "API Account Key"
                 }
             }
         }
