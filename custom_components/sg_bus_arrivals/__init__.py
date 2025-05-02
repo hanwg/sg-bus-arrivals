@@ -27,8 +27,8 @@ async def async_setup_entry(
     )
 
     result = await service.authenticate()
-    # if not result:
-    raise ConfigEntryAuthFailed
+    if not result:
+        raise ConfigEntryAuthFailed
 
     entry.runtime_data = service
     await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
