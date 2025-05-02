@@ -9,7 +9,6 @@ from homeassistant.core import HomeAssistant
 from . import const
 
 _LOGGER = logging.getLogger(__name__)
-PASSWORD_FILE = ".storage/sg_bus_arrivals"
 
 
 class SgBusArrivalsService:
@@ -38,4 +37,3 @@ class SgBusArrivalsService:
                 _LOGGER.warning("Failed to authenticate: %s", response)
 
             return response.status == 200
-            # data = await response.json()
