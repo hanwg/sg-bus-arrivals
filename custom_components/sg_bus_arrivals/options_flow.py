@@ -25,6 +25,7 @@ async def validate_bus_stop(
     service: SgBusArrivalsService = config_entry.runtime_data
     bus_stop: BusStop = await service.get_bus_stop(data)
 
+    x = await service.get_bus_services(bus_stop.bus_stop_code)
     if bus_stop is None:
         errors["base"] = "invalid_bus_stop_code"
 

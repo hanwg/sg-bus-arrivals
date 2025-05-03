@@ -72,6 +72,32 @@ class SgBusArrivalsService:
 
             raise ApiError
 
+    async def get_bus_services(self, bus_stop_code: str) -> list[str]:
+        """Get bus services."""
+
+        async with (
+            aiohttp.ClientSession() as session,
+            session.get(
+                const.API_BASE_URL + "/BusRoutes",
+                headers={"AccountKey": self._account_key},
+            ) as response,
+        ):
+            if response.status == 200:
+                data = await response.json()
+
+                bus_stop: list[str] = [
+                    bus_stop["ServiceNo"]
+                    for bus_stop in filter(
+                        lambda bus_stop: bus_stop["BusStopCode"] == bus_stop_code,
+                        data["value"],
+                    )
+                ]
+
+                if bus_stop is None:
+                    return None
+
+            raise ApiError
+
 
 class ApiError(exceptions.HomeAssistantError):
     """Error to indicate api failed."""

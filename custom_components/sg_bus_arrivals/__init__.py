@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from custom_components.sg_bus_arrivals.const import DOMAIN
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_API_KEY, Platform
 from homeassistant.core import HomeAssistant
