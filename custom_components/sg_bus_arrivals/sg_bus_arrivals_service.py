@@ -1,29 +1,31 @@
 """Handle API calls to LTA DataMall for querying bus arrivals."""
 
+from datetime import UTC, datetime
 import logging
 from typing import Any
 
 import aiohttp
 
 from homeassistant import exceptions
-from homeassistant.core import HomeAssistant
 
 from . import const
+from .model.bus_arrival import BusArrival
 from .model.bus_stop import BusStop
 
 _LOGGER = logging.getLogger(__name__)
 
 
+# https://datamall.lta.gov.sg/content/dam/datamall/datasets/LTA_DataMall_API_User_Guide.pdf
 class SgBusArrivalsService:
     """Service for handling API calls."""
 
-    def __init__(self, hass: HomeAssistant, _account_key: str) -> None:
+    def __init__(self, _account_key: str) -> None:
         """Initialize with the given account key."""
 
         self._account_key = _account_key
         self._is_authenticated = False
 
-    async def get_request(self, endpoint: str, page: int = 1) -> Any:
+    async def __get_request(self, endpoint: str, page: int = 1) -> Any:
         """Invoke API."""
 
         async with (
@@ -47,13 +49,13 @@ class SgBusArrivalsService:
         if self._is_authenticated:
             return True
 
-        await self.get_request("/BusServices")
+        await self.__get_request("/BusServices")
         return True
 
     async def get_bus_stop(self, bus_stop_code: str) -> BusStop:
         """Get bus stop information by bus stop code."""
 
-        response = await self.get_request("/BusStops")
+        response = await self.__get_request("/BusStops")
         bus_stop = next(
             (
                 bus_stop
@@ -75,7 +77,7 @@ class SgBusArrivalsService:
     async def get_bus_services(self, bus_stop_code: str) -> list[str]:
         """Get bus services."""
 
-        response = await self.get_request("/BusRoutes")
+        response = await self.__get_request("/BusRoutes")
 
         return [
             bus_stop["ServiceNo"]
@@ -85,10 +87,47 @@ class SgBusArrivalsService:
             )
         ]
 
+    async def get_bus_arrivals(self, bus_stop_code: str) -> list[BusArrival]:
+        """Get bus arrivals."""
+
+        response = await self.__get_request(
+            f"/v3/BusArrival?BusStopCode={bus_stop_code}"
+        )
+
+        return [
+            BusArrival(
+                response["BusStopCode"],
+                bus_arrival["ServiceNo"],
+                await self.__compute_arrival_minutes(
+                    bus_arrival["NextBus"]["EstimatedArrival"]
+                ),
+                await self.__compute_arrival_minutes(
+                    bus_arrival["NextBus2"]["EstimatedArrival"]
+                ),
+                await self.__compute_arrival_minutes(
+                    bus_arrival["NextBus3"]["EstimatedArrival"]
+                ),
+            )
+            for bus_arrival in response["Services"]
+        ]
+
+    async def __compute_arrival_minutes(self, arrival_str: str) -> int:
+        """Compute arrival minutes."""
+
+        if arrival_str == "":
+            return None
+
+        arrival_datetime = datetime.fromisoformat(arrival_str)
+        now_utc = datetime.now(UTC)
+
+        minutes = (arrival_datetime - now_utc).total_seconds() / 60
+        return int(minutes)  # rounded down
+
 
 class ApiError(exceptions.HomeAssistantError):
     """Error to indicate api failed."""
 
     def __init__(self, status: int) -> None:
         """Initialize with the given status code."""
+        super().__init__(f"LTA DataMall API call failed with status code {status}")
         self.status = status

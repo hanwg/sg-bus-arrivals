@@ -29,14 +29,10 @@ async def validate_api(
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
 
-    service = SgBusArrivalsService(hass, data[CONF_API_KEY])
+    service = SgBusArrivalsService(data[CONF_API_KEY])
 
-    try:
-        if not await service.authenticate():
-            errors["base"] = "invalid_auth"
-    except Exception:
-        _LOGGER.exception("Unexpected exception")
-        errors["base"] = "unknown"
+    if not await service.authenticate():
+        errors["base"] = "invalid_auth"
 
     return errors
 

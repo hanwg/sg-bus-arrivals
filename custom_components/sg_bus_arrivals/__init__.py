@@ -22,9 +22,7 @@ async def async_setup_entry(
     """Set up SG Bus Arrivals from a config entry."""
 
     # create instance of our api
-    service = sg_bus_arrivals_service.SgBusArrivalsService(
-        hass, entry.data[CONF_API_KEY]
-    )
+    service = sg_bus_arrivals_service.SgBusArrivalsService(entry.data[CONF_API_KEY])
 
     result = await service.authenticate()
     if not result:

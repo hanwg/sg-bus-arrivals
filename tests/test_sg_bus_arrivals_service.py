@@ -13,13 +13,13 @@ from custom_components.sg_bus_arrivals.sg_bus_arrivals_service import (
 )
 import pytest
 
-from homeassistant.core import HomeAssistant
+from config.custom_components.sg_bus_arrivals.model.bus_arrival import BusArrival
 
 
 @pytest.fixture
-def service(hass: HomeAssistant) -> SgBusArrivalsService:
+def service() -> SgBusArrivalsService:
     """Fixture for SgBusArrivalsService."""
-    return SgBusArrivalsService(hass, "test_api_key")
+    return SgBusArrivalsService("test_api_key")
 
 
 @pytest.fixture
@@ -100,9 +100,6 @@ async def test_get_bus_stop_not_found(
 ) -> None:
     """Test get bus stop."""
 
-    # for entry in os.scandir("tests/fixtures"):
-    #    print(f"File: {entry.name}")
-
     json: str = await load_file("tests/fixtures/bus_stops.json")
 
     mock_response = AsyncMock()
@@ -114,6 +111,24 @@ async def test_get_bus_stop_not_found(
 
     assert mock_session.get.called
     assert bus_stop is None
+
+
+async def test_get_bus_arrivals(
+    mock_session: MagicMock, service: SgBusArrivalsService
+) -> None:
+    """Test get bus arrivals."""
+
+    json: str = await load_file("tests/fixtures/bus_arrival.json")
+
+    mock_response = AsyncMock()
+    mock_response.status = 200
+    mock_response.json.return_value = json
+    mock_session.get.return_value.__aenter__.return_value = mock_response
+
+    arrivals: list[BusArrival] = await service.get_bus_arrivals("83139")
+
+    assert mock_session.get.called
+    assert arrivals
 
 
 async def load_file(filename: str) -> Any:
