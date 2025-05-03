@@ -8,7 +8,7 @@ from homeassistant import exceptions
 from homeassistant.core import HomeAssistant
 
 from . import const
-from .model.bus_stop import BusStop  # type: ignore  # noqa: PGH003
+from .model.bus_stop import BusStop
 
 _LOGGER = logging.getLogger(__name__)
 

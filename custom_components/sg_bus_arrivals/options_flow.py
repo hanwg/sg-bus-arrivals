@@ -7,7 +7,7 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResult
 
-from .model.bus_stop import BusStop  # type: ignore  # noqa: PGH003
+from .model.bus_stop import BusStop
 from .sg_bus_arrivals_service import SgBusArrivalsService
 
 STEP_USER_DATA_SCHEMA = vol.Schema({vol.Required("bus_stop_code"): str})

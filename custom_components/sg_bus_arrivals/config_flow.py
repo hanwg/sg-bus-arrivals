@@ -13,7 +13,7 @@ from homeassistant.const import CONF_API_KEY
 from homeassistant.core import HomeAssistant, callback
 
 from .const import DOMAIN
-from .options_flow import OptionsFlowHandler  # type: ignore  # noqa: PGH003
+from .options_flow import OptionsFlowHandler
 from .sg_bus_arrivals_service import SgBusArrivalsService
 
 _LOGGER = logging.getLogger(__name__)
