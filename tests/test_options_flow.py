@@ -35,6 +35,8 @@ async def test_async_step_init_fail(
     assert await hass.config_entries.async_setup(config_entry.entry_id)
     await hass.async_block_till_done()
 
+    assert mock_authenticate.called
+
     mock_get_bus_stop.return_value = None
 
     result = await hass.config_entries.options.async_init(
@@ -42,4 +44,6 @@ async def test_async_step_init_fail(
         context={"source": SOURCE_USER},
         data={"bus_stop_code": "invalid bus stop code"},
     )
+
+    assert mock_get_bus_stop.called
     assert result["errors"] == {"base": "invalid_bus_stop_code"}

@@ -20,4 +20,6 @@ async def test_user_flow_fail(mock: MagicMock, hass: HomeAssistant) -> None:
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": SOURCE_USER}, data={"api_key": "invalid_key"}
     )
+
+    assert mock.called
     assert result["errors"] == {"base": "invalid_auth"}

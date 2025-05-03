@@ -8,6 +8,7 @@ import aiofiles
 from anyio import Path
 from custom_components.sg_bus_arrivals.model.bus_stop import BusStop
 from custom_components.sg_bus_arrivals.sg_bus_arrivals_service import (
+    ApiError,
     SgBusArrivalsService,
 )
 import pytest
@@ -41,6 +42,7 @@ async def test_authenticate_success(
 
     result = await service.authenticate()
 
+    assert mock_session.get.called
     assert result is True
 
 
@@ -53,9 +55,11 @@ async def test_authenticate_failed(
     mock_response.status = 401
     mock_session.get.return_value.__aenter__.return_value = mock_response
 
-    result = await service.authenticate()
+    with pytest.raises(ApiError) as error:
+        await service.authenticate()
 
-    assert result is False
+    assert mock_session.get.called
+    assert error.value.status == 401
 
 
 async def test_authenticate_already_authenticated(
@@ -87,6 +91,7 @@ async def test_get_bus_stop(
 
     bus_stop: BusStop = await service.get_bus_stop("01012")
 
+    assert mock_session.get.called
     assert bus_stop is not None
 
 
@@ -107,6 +112,7 @@ async def test_get_bus_stop_not_found(
 
     bus_stop: BusStop = await service.get_bus_stop("invalid bus stop code")
 
+    assert mock_session.get.called
     assert bus_stop is None
 
 
