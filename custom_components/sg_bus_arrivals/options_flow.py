@@ -7,10 +7,11 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResult
 
+from .const import OPTIONS_BUS_STOP_CODE
 from .model.bus_stop import BusStop
 from .sg_bus_arrivals_service import SgBusArrivalsService
 
-STEP_USER_DATA_SCHEMA = vol.Schema({vol.Required("bus_stop_code"): str})
+STEP_USER_DATA_SCHEMA = vol.Schema({vol.Required(OPTIONS_BUS_STOP_CODE): str})
 
 
 async def validate_bus_stop(
@@ -46,7 +47,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         errors: dict[str, str] = {}
         if user_input is not None:
             bus_stop: BusStop = await validate_bus_stop(
-                self.config_entry, user_input["bus_stop_code"], errors
+                self.config_entry, user_input[OPTIONS_BUS_STOP_CODE], errors
             )
 
             if not errors:

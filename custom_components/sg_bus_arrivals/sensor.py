@@ -1,21 +1,13 @@
 """Platform for sensor integration."""
 
-# This file shows the setup for the sensors associated with the cover.
-# They are setup in the same way with the call to the async_setup_entry function
-# via HA from the module __init__. Each sensor has a device_class, this tells HA how
-# to display it in the UI (for know types). The unit_of_measurement property tells HA
-# what the unit is, so it can display the correct range. For predefined types (such as
-# battery), the unit_of_measurement should match what's expected.
-import random
-
-from homeassistant.components.sensor import SensorDeviceClass
-from homeassistant.const import LIGHT_LUX, PERCENTAGE
+from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
+from homeassistant.components.sensor.const import SensorStateClass
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import SgBusArrivalsConfigEntry
-from .const import DOMAIN
+from .const import OPTIONS_BUS_STOP_CODE
+from .sg_bus_arrivals_service import SgBusArrivalsService
 
 
 # See cover.py for more details.
@@ -28,25 +20,32 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Add sensors for passed config_entry in HA."""
-    # hub = config_entry.runtime_data
 
-    new_devices = []
+    # retrieve our api instance
+    service: SgBusArrivalsService = config_entry.runtime_data
+
+    # retrieve configuration
+    bus_stop_code: str = config_entry.options[OPTIONS_BUS_STOP_CODE]
+
+    new_sensors = []
     # for roller in hub.rollers:
     #    new_devices.append(BatterySensor(roller))
     #    new_devices.append(IlluminanceSensor(roller))
-    # new_devices.append(SensorBase())
-    if new_devices:
-        async_add_entities(new_devices)
+    # new_sensors.append(BusArrivalSensor(bus_stop_code))
+    if new_sensors:
+        async_add_entities(new_sensors)
 
 
-# This base class shows the common properties and methods for a sensor as used in this
-# example. See each sensor for further details about properties and methods that
-# have been overridden.
-class SensorBase(Entity):
-    """Base representation of a Hello World Sensor."""
+class BusArrivalSensor(SensorEntity):
+    """Sensor tracking the number of minutes till bus arrival."""
 
-    def __init__(self):
-        #    """Initialize the sensor."""
-        #    self._roller = roller
-        self._attr_unique_id = "sg_bus_arrivals_api"
-        self._attr_name = "LTA DataMall API"
+    def __init__(self, description: str, bus_stop_code: str, service_no: str) -> None:
+        """Initialize the sensor."""
+        self._description = description
+        self._bus_stop_code = bus_stop_code
+        self._service_no = service_no
+        self._attr_device_class = SensorDeviceClass.DURATION
+        self._attr_unique_id = f"{bus_stop_code}_{service_no}"
+        self._attr_name = description
+        self._attr_state_class = SensorStateClass.MEASUREMENT
+        self._attr_native_value = None

@@ -22,7 +22,6 @@ Copy the `custom_components/sg_bus_arrivals` folder and all of its contents into
 3. Click on the **ADD INTEGRATION** button.
 4. In the **Select brand** dialog, enter `SG Bus Arrivals` in the search box and select the integration.
 5. Enter the **Account Key** (refer to the Pre-requisites section) when prompted and click on the **Submit** button to configure the integration.
-
 ![](images/add-integration.png)
 
 ## Configuration
