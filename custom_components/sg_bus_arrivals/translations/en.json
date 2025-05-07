@@ -7,6 +7,9 @@
             "invalid_auth": "Authentication failed",
             "unknown": "Unexpected error"
         },
+        "initiate_flow": {
+            "reconfigure": "Reconfigure API Account Key"
+        },
         "step": {
             "user": {
                 "data": {
@@ -25,17 +28,22 @@
             }
         }
     },
-    "options": {
-        "error": {
-            "invalid_bus_stop_code": "Invalid bus stop code"
-        },
-        "step": {
-            "init": {
-                "title": "Add new bus stop",
-                "data": {
-                    "bus_stop_code": "Bus stop code"
-                },
-                "description": "5-digit bus stop code from bus stop sign"
+    "config_subentries": {
+        "bus_service": {
+            "initiate_flow": {
+                "user": "Add new bus service"
+            },
+            "step": {
+                "user": {
+                    "title": "Add new bus stop",
+                    "data": {
+                        "bus_stop_code": "Bus stop code"
+                    },
+                    "description": "5-digit bus stop code from bus stop sign"
+                }
+            },
+            "error": {
+                "invalid_bus_stop_code": "Invalid bus stop code"
             }
         }
     }

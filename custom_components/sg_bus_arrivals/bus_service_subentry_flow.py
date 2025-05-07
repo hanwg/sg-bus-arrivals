@@ -32,7 +32,7 @@ async def validate_bus_stop(
     return bus_stop
 
 
-class OptionsFlowHandler(config_entries.OptionsFlow):
+class BusServiceSubEntryFlowHandler(config_entries.ConfigSubentryFlow):
     """Handles options flow for creating new bus stops."""
 
     @property
@@ -40,14 +40,14 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         """Return the config entry."""
         return self.hass.config_entries.async_get_entry(self.handler)
 
-    async def async_step_init(
+    async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
         """Handle adding of new bus stop code."""
         errors: dict[str, str] = {}
         if user_input is not None:
             bus_stop: BusStop = await validate_bus_stop(
-                self.config_entry, user_input[OPTIONS_BUS_STOP_CODE], errors
+                self._get_entry(), user_input[OPTIONS_BUS_STOP_CODE], errors
             )
 
             if not errors:
@@ -56,5 +56,5 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 )
 
         return self.async_show_form(
-            step_id="init", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
+            step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors
         )
