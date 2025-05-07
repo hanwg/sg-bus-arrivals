@@ -19,7 +19,7 @@ from homeassistant.const import CONF_API_KEY
 from homeassistant.core import HomeAssistant, callback
 
 from .bus_service_subentry_flow import BusServiceSubEntryFlowHandler
-from .const import DOMAIN
+from .const import DOMAIN, SUBENTRY_TYPE
 from .sg_bus_arrivals_service import SgBusArrivalsService
 
 _LOGGER = logging.getLogger(__name__)
@@ -54,7 +54,7 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
         cls, config_entry: ConfigEntry
     ) -> dict[str, type[ConfigSubentryFlow]]:
         """Return subentries supported by this integration."""
-        return {"bus_service": BusServiceSubEntryFlowHandler}
+        return {SUBENTRY_TYPE: BusServiceSubEntryFlowHandler}
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None

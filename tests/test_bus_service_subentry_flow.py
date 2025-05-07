@@ -2,7 +2,7 @@
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from custom_components.sg_bus_arrivals.const import DOMAIN
+from custom_components.sg_bus_arrivals.const import DOMAIN, SUBENTRY_TYPE
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from homeassistant.config_entries import SOURCE_USER
@@ -39,8 +39,8 @@ async def test_async_step_init_fail(
 
     mock_get_bus_stop.return_value = None
 
-    result = await hass.config_entries.options.async_init(
-        config_entry.entry_id,
+    result = await hass.config_entries.subentries.async_init(
+        (config_entry.entry_id, SUBENTRY_TYPE),
         context={"source": SOURCE_USER},
         data={"bus_stop_code": "invalid bus stop code"},
     )
