@@ -4,19 +4,23 @@ from typing import Any
 
 import voluptuous as vol
 
-from homeassistant import config_entries
-from homeassistant.data_entry_flow import FlowResult
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigSubentryFlow,
+    SubentryFlowResult,
+)
 
 from .const import SUBENTRY_BUS_STOP_CODE, SUBENTRY_SERVICE_NO
 from .model.bus_stop import BusStop
 from .sg_bus_arrivals_service import SgBusArrivalsService
 
-STEP_USER_DATA_SCHEMA = vol.Schema({vol.Required(SUBENTRY_BUS_STOP_CODE): str,
-                                    vol.Required(SUBENTRY_SERVICE_NO): str})
+STEP_USER_DATA_SCHEMA = vol.Schema(
+    {vol.Required(SUBENTRY_BUS_STOP_CODE): str, vol.Required(SUBENTRY_SERVICE_NO): str}
+)
 
 
 async def validate_bus_stop(
-    config_entry: config_entries.ConfigEntry,
+    config_entry: ConfigEntry,
     data: str,
     errors: dict[str, str],
 ) -> BusStop:
@@ -33,7 +37,7 @@ async def validate_bus_stop(
     return bus_stop
 
 
-class BusServiceSubEntryFlowHandler(config_entries.ConfigSubentryFlow):
+class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
     """Handles options flow for creating new bus stops."""
 
     @property
@@ -43,13 +47,16 @@ class BusServiceSubEntryFlowHandler(config_entries.ConfigSubentryFlow):
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    ) -> SubentryFlowResult:
         """Handle adding of new bus stop code."""
         errors: dict[str, str] = {}
         if user_input is not None:
             config_entry = self._get_entry()
             for existing_subentry in config_entry.subentries.values():
-                if existing_subentry.unique_id == f"{user_input[SUBENTRY_BUS_STOP_CODE]}_{user_input[SUBENTRY_SERVICE_NO]}":
+                if (
+                    existing_subentry.unique_id
+                    == f"{user_input[SUBENTRY_BUS_STOP_CODE]}_{user_input[SUBENTRY_SERVICE_NO]}"
+                ):
                     return self.async_abort(reason="already_configured")
 
             bus_stop: BusStop = await validate_bus_stop(
@@ -58,7 +65,9 @@ class BusServiceSubEntryFlowHandler(config_entries.ConfigSubentryFlow):
 
             if not errors:
                 return self.async_create_entry(
-                    title=bus_stop.description, data=user_input, unique_id=f"{user_input[SUBENTRY_BUS_STOP_CODE]}_{user_input[SUBENTRY_SERVICE_NO]}"
+                    title=bus_stop.description,
+                    data=user_input,
+                    unique_id=f"{user_input[SUBENTRY_BUS_STOP_CODE]}_{user_input[SUBENTRY_SERVICE_NO]}",
                 )
 
         return self.async_show_form(

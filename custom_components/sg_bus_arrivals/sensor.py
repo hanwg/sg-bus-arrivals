@@ -27,12 +27,9 @@ async def async_setup_entry(
     # retrieve our api instance
     service: SgBusArrivalsService = config_entry.runtime_data
 
-    new_sensors = [
-        BusArrivalSensor("test", subentry.data[SUBENTRY_BUS_STOP_CODE], subentry.data[SUBENTRY_SERVICE_NO])
-        for subentry in config_entry.subentries.values()
-    ]
-    if new_sensors:
-        async_add_entities(new_sensors)
+    for subentry in config_entry.subentries.values():
+        sensor: BusArrivalSensor = BusArrivalSensor("test", subentry.data[SUBENTRY_BUS_STOP_CODE], subentry.data[SUBENTRY_SERVICE_NO])
+        async_add_entities([sensor], config_subentry_id=subentry.subentry_id)
 
 
 class BusArrivalSensor(SensorEntity):
