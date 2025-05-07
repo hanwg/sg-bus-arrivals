@@ -7,11 +7,12 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResult
 
-from .const import OPTIONS_BUS_STOP_CODE
+from .const import SUBENTRY_BUS_STOP_CODE, SUBENTRY_SERVICE_NO
 from .model.bus_stop import BusStop
 from .sg_bus_arrivals_service import SgBusArrivalsService
 
-STEP_USER_DATA_SCHEMA = vol.Schema({vol.Required(OPTIONS_BUS_STOP_CODE): str})
+STEP_USER_DATA_SCHEMA = vol.Schema({vol.Required(SUBENTRY_BUS_STOP_CODE): str,
+                                    vol.Required(SUBENTRY_SERVICE_NO): str})
 
 
 async def validate_bus_stop(
@@ -46,13 +47,18 @@ class BusServiceSubEntryFlowHandler(config_entries.ConfigSubentryFlow):
         """Handle adding of new bus stop code."""
         errors: dict[str, str] = {}
         if user_input is not None:
+            config_entry = self._get_entry()
+            for existing_subentry in config_entry.subentries.values():
+                if existing_subentry.unique_id == f"{user_input[SUBENTRY_BUS_STOP_CODE]}_{user_input[SUBENTRY_SERVICE_NO]}":
+                    return self.async_abort(reason="already_configured")
+
             bus_stop: BusStop = await validate_bus_stop(
-                self._get_entry(), user_input[OPTIONS_BUS_STOP_CODE], errors
+                config_entry, user_input[SUBENTRY_BUS_STOP_CODE], errors
             )
 
             if not errors:
                 return self.async_create_entry(
-                    title=bus_stop.description, data=user_input
+                    title=bus_stop.description, data=user_input, unique_id=f"{user_input[SUBENTRY_BUS_STOP_CODE]}_{user_input[SUBENTRY_SERVICE_NO]}"
                 )
 
         return self.async_show_form(

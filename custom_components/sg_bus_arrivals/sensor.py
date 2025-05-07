@@ -1,14 +1,17 @@
 """Platform for sensor integration."""
 
+import logging
+
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.components.sensor.const import SensorStateClass
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import SgBusArrivalsConfigEntry
-from .const import OPTIONS_BUS_STOP_CODE
+from .const import SUBENTRY_BUS_STOP_CODE, SUBENTRY_SERVICE_NO
 from .sg_bus_arrivals_service import SgBusArrivalsService
 
+_LOGGER = logging.getLogger(__name__)
 
 # See cover.py for more details.
 # Note how both entities for each roller sensor (battery and illuminance) are added at
@@ -24,14 +27,10 @@ async def async_setup_entry(
     # retrieve our api instance
     service: SgBusArrivalsService = config_entry.runtime_data
 
-    # retrieve configuration
-    bus_stop_code: str = config_entry.options[OPTIONS_BUS_STOP_CODE]
-
-    new_sensors = []
-    # for roller in hub.rollers:
-    #    new_devices.append(BatterySensor(roller))
-    #    new_devices.append(IlluminanceSensor(roller))
-    # new_sensors.append(BusArrivalSensor(bus_stop_code))
+    new_sensors = [
+        BusArrivalSensor("test", subentry.data[SUBENTRY_BUS_STOP_CODE], subentry.data[SUBENTRY_SERVICE_NO])
+        for subentry in config_entry.subentries.values()
+    ]
     if new_sensors:
         async_add_entities(new_sensors)
 
@@ -49,3 +48,4 @@ class BusArrivalSensor(SensorEntity):
         self._attr_name = description
         self._attr_state_class = SensorStateClass.MEASUREMENT
         self._attr_native_value = None
+        self.entity_id = f"sensor.sgbusarrivals_{self._attr_unique_id}"

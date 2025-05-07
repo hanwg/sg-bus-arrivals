@@ -1,8 +1,5 @@
 {
     "config": {
-        "abort": {
-            "already_configured": "API is already configured. You reconfigure the existing API or add new bus stops instead."
-        },
         "error": {
             "invalid_auth": "Authentication failed",
             "unknown": "Unexpected error"
@@ -37,10 +34,14 @@
                 "user": {
                     "title": "Add new bus stop",
                     "data": {
-                        "bus_stop_code": "Bus stop code"
+                        "bus_stop_code": "Bus stop code",
+                        "service_no": "Bus service number"
                     },
                     "description": "5-digit bus stop code from bus stop sign"
                 }
+            },
+            "abort": {
+                "already_configured": "This bus service is already configured"
             },
             "error": {
                 "invalid_bus_stop_code": "Invalid bus stop code"

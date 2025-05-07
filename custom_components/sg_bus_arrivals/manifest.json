@@ -12,6 +12,7 @@
   "issue_tracker": "https://github.com/hanwg/sg-bus-arrivals/issues",
   "quality_scale": "bronze",
   "requirements": [],
+  "single_config_entry": true,
   "ssdp": [],
   "version": "v1.0.0",
   "zeroconf": []

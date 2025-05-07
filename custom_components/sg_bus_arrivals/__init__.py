@@ -32,7 +32,7 @@ async def async_setup_entry(
     entry.runtime_data = service
 
     # Registers update listener to update config entry when options are updated.
-    entry.add_update_listener(options_update_listener)
+    entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
     # pass config to sensor.py to create sensor entites
     await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
@@ -40,7 +40,7 @@ async def async_setup_entry(
     return True
 
 
-async def options_update_listener(hass: HomeAssistant, config_entry: ConfigEntry):
+async def _async_update_listener(hass: HomeAssistant, config_entry: ConfigEntry):
     """Handle options update."""
     await hass.config_entries.async_reload(config_entry.entry_id)
 
