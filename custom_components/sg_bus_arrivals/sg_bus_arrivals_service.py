@@ -6,7 +6,7 @@ from typing import Any
 
 import aiohttp
 
-from homeassistant import exceptions
+from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 
 from . import const
 from .model.bus_arrival import BusArrival
@@ -35,11 +35,14 @@ class SgBusArrivalsService:
                 headers={"AccountKey": self._account_key},
             ) as response,
         ):
-            _LOGGER.info(
+            _LOGGER.debug(
                 "Invoking api, endpoint: %s, status: %s", endpoint, response.status
             )
             if response.status == 200:
                 return await response.json()
+
+            if response.status == 401:
+                raise ConfigEntryAuthFailed
 
             raise ApiError(response.status)
 
@@ -124,7 +127,7 @@ class SgBusArrivalsService:
         return int(minutes)  # rounded down
 
 
-class ApiError(exceptions.HomeAssistantError):
+class ApiError(HomeAssistantError):
     """Error to indicate api failed."""
 
     def __init__(self, status: int) -> None:

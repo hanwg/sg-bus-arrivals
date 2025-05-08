@@ -10,12 +10,16 @@ from homeassistant.config_entries import (
     SubentryFlowResult,
 )
 
-from .const import SUBENTRY_BUS_STOP_CODE, SUBENTRY_SERVICE_NO
+from .const import SUBENTRY_BUS_STOP_CODE, SUBENTRY_LABEL, SUBENTRY_SERVICE_NO
 from .model.bus_stop import BusStop
 from .sg_bus_arrivals_service import SgBusArrivalsService
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
-    {vol.Required(SUBENTRY_BUS_STOP_CODE): str, vol.Required(SUBENTRY_SERVICE_NO): str}
+    {
+        vol.Required(SUBENTRY_LABEL): str,
+        vol.Required(SUBENTRY_BUS_STOP_CODE): str,
+        vol.Required(SUBENTRY_SERVICE_NO): str,
+    }
 )
 
 
@@ -65,7 +69,7 @@ class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
 
             if not errors:
                 return self.async_create_entry(
-                    title=bus_stop.description,
+                    title=user_input[SUBENTRY_LABEL],
                     data=user_input,
                     unique_id=f"{user_input[SUBENTRY_BUS_STOP_CODE]}_{user_input[SUBENTRY_SERVICE_NO]}",
                 )
