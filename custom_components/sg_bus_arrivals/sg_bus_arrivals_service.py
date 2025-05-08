@@ -25,7 +25,7 @@ class SgBusArrivalsService:
         self._account_key = _account_key
         self._is_authenticated = False
 
-    async def __get_request(self, endpoint: str, page: int = 1) -> Any:
+    async def _get_request(self, endpoint: str, page: int = 1) -> Any:
         """Invoke API."""
 
         async with (
@@ -52,13 +52,13 @@ class SgBusArrivalsService:
         if self._is_authenticated:
             return True
 
-        await self.__get_request("/BusServices")
+        await self._get_request("/BusServices")
         return True
 
     async def get_bus_stop(self, bus_stop_code: str) -> BusStop:
         """Get bus stop information by bus stop code."""
 
-        response = await self.__get_request("/BusStops")
+        response = await self._get_request("/BusStops")
         bus_stop = next(
             (
                 bus_stop
@@ -80,7 +80,7 @@ class SgBusArrivalsService:
     async def get_bus_services(self, bus_stop_code: str) -> list[str]:
         """Get bus services."""
 
-        response = await self.__get_request("/BusRoutes")
+        response = await self._get_request("/BusRoutes")
 
         return [
             bus_stop["ServiceNo"]
@@ -93,7 +93,7 @@ class SgBusArrivalsService:
     async def get_bus_arrivals(self, bus_stop_code: str) -> list[BusArrival]:
         """Get bus arrivals."""
 
-        response = await self.__get_request(
+        response = await self._get_request(
             f"/v3/BusArrival?BusStopCode={bus_stop_code}"
         )
 
@@ -101,20 +101,20 @@ class SgBusArrivalsService:
             BusArrival(
                 response["BusStopCode"],
                 bus_arrival["ServiceNo"],
-                await self.__compute_arrival_minutes(
+                await self._compute_arrival_minutes(
                     bus_arrival["NextBus"]["EstimatedArrival"]
                 ),
-                await self.__compute_arrival_minutes(
+                await self._compute_arrival_minutes(
                     bus_arrival["NextBus2"]["EstimatedArrival"]
                 ),
-                await self.__compute_arrival_minutes(
+                await self._compute_arrival_minutes(
                     bus_arrival["NextBus3"]["EstimatedArrival"]
                 ),
             )
             for bus_arrival in response["Services"]
         ]
 
-    async def __compute_arrival_minutes(self, arrival_str: str) -> int:
+    async def _compute_arrival_minutes(self, arrival_str: str) -> int:
         """Compute arrival minutes."""
 
         if arrival_str == "":

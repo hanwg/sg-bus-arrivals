@@ -22,7 +22,7 @@ class BusArrivalUpdateCoordinator(
     """Coordinator that polls for bus arrival times."""
 
     def __init__(
-        self, hass: HomeAssistant, config_entry, service: SgBusArrivalsService
+        self, hass: HomeAssistant, config_entry, service: SgBusArrivalsService, scan_interval: int
     ) -> None:
         """Initialize my coordinator."""
         super().__init__(
@@ -31,7 +31,7 @@ class BusArrivalUpdateCoordinator(
             name="Bus arrival times",
             config_entry=config_entry,
             # Polling interval. Will only be polled if there are subscribers.
-            update_interval=timedelta(seconds=20),
+            update_interval=timedelta(seconds=scan_interval),
             # Set always_update to `False` if the data returned from the
             # api can be compared via `__eq__` to avoid duplicate updates
             # being dispatched to listeners

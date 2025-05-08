@@ -2,6 +2,7 @@
     "config": {
         "error": {
             "invalid_auth": "Authentication failed",
+            "invalid_scan_interval": "Refresh interval must be at least 20 seconds",
             "unknown": "Unexpected error"
         },
         "initiate_flow": {
@@ -10,18 +11,22 @@
         "step": {
             "user": {
                 "data": {
-                    "api_key": "API Account Key"
+                    "api_key": "API Account Key",
+                    "scan_interval": "Refresh interval (seconds)"
                 },
                 "data_description": {
-                    "api_key": "API Account Key for LTA DataMall API."
+                    "api_key": "API Account Key for LTA DataMall API.",
+                    "scan_interval": "Time interval (in seconds) to refresh the data. Min is 20 seconds."
                 }
             },
             "reconfigure": {
                 "data": {
-                    "api_key": "API Account Key"
+                    "api_key": "API Account Key",
+                    "scan_interval": "Refresh interval (seconds)"
                 },
                 "data_description": {
-                    "api_key": "API Account Key for LTA DataMall API."
+                    "api_key": "API Account Key for LTA DataMall API.",
+                    "scan_interval": "Time interval (in seconds) to refresh the data. Min is 20 seconds."
                 }
             },
             "reauth_confirm": {
@@ -32,6 +37,9 @@
                     "api_key": "API Account Key for LTA DataMall API."
                 }
             }
+        },
+        "abort": {
+            "reconfigure_successful": "Re-configuration was successful"
         }
     },
     "config_subentries": {

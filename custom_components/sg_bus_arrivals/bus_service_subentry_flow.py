@@ -47,11 +47,6 @@ async def validate_bus_stop(
 class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
     """Handles options flow for creating new bus stops."""
 
-    @property
-    def config_entry(self):
-        """Return the config entry."""
-        return self.hass.config_entries.async_get_entry(self.handler)
-
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> SubentryFlowResult:

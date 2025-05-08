@@ -15,7 +15,7 @@ from homeassistant.config_entries import (
     ConfigFlowResult,
     ConfigSubentryFlow,
 )
-from homeassistant.const import CONF_API_KEY
+from homeassistant.const import CONF_API_KEY, CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed
 
@@ -25,7 +25,10 @@ from .sg_bus_arrivals_service import SgBusArrivalsService
 
 _LOGGER = logging.getLogger(__name__)
 
-STEP_USER_DATA_API_SCHEMA = vol.Schema({vol.Required(CONF_API_KEY): str})
+MIN_SCAN_INTERVAL = 20
+STEP_USER_DATA_API_SCHEMA = vol.Schema(
+    {vol.Required(CONF_API_KEY): str, vol.Required(CONF_SCAN_INTERVAL, default=MIN_SCAN_INTERVAL): int}
+)
 
 
 async def validate_api(
@@ -35,6 +38,10 @@ async def validate_api(
 
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
+
+    if data[CONF_SCAN_INTERVAL] < MIN_SCAN_INTERVAL:
+        errors["base"] = "invalid_scan_interval"
+        return errors
 
     service = SgBusArrivalsService(data[CONF_API_KEY])
 
@@ -95,8 +102,17 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
                     self._get_reconfigure_entry(), data_updates=user_input
                 )
 
+        api_key: str = self._get_reconfigure_entry().data[CONF_API_KEY]
+        scan_interval: str = self._get_reconfigure_entry().data[CONF_SCAN_INTERVAL]
         return self.async_show_form(
-            step_id="reconfigure", data_schema=STEP_USER_DATA_API_SCHEMA, errors=errors
+            step_id="reconfigure",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_API_KEY, default=api_key): str,
+                    vol.Required(CONF_SCAN_INTERVAL, default=scan_interval): int,
+                }
+            ),
+            errors=errors,
         )
 
     async def async_step_reauth(

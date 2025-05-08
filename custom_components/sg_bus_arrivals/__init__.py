@@ -3,9 +3,8 @@
 from __future__ import annotations
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_API_KEY, Platform
+from homeassistant.const import CONF_API_KEY, CONF_SCAN_INTERVAL, Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed
 
 from .const import RUNTIME_DATA_COORDINATOR, RUNTIME_DATA_SERVICE
 from .coordinator import BusArrivalUpdateCoordinator
@@ -25,7 +24,7 @@ async def async_setup_entry(
 
     # create instance of our api
     service: SgBusArrivalsService = SgBusArrivalsService(entry.data[CONF_API_KEY])
-    coordinator: BusArrivalUpdateCoordinator = BusArrivalUpdateCoordinator(hass, entry, service)
+    coordinator: BusArrivalUpdateCoordinator = BusArrivalUpdateCoordinator(hass, entry, service, entry.data[CONF_SCAN_INTERVAL])
 
     await service.authenticate()
 

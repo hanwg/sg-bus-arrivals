@@ -74,30 +74,31 @@ class BusArrivalSensor(CoordinatorEntity[BusArrivalUpdateCoordinator], SensorEnt
         self._attr_native_value = None
         self.entity_id = f"sensor.sgbusarrivals_{self._attr_unique_id}"
         self.icon = "mdi:bus-clock"
-        self._bus_arrival = BusArrival(
+        self._bus_arrival = self._get_data(bus_stop_code, service_no)
+
+    def _get_data(self, bus_stop_code: str, service_no: str) -> BusArrival:
+        if service_no in self.coordinator.data[bus_stop_code]:
+            return self.coordinator.data[bus_stop_code][service_no]
+
+        return BusArrival(
             bus_stop_code=bus_stop_code,
             service_no=service_no,
-            next_bus_minutes=coordinator.data[bus_stop_code][
-                service_no
-            ].next_bus_minutes,
-            next_bus_minutes_2=coordinator.data[bus_stop_code][
-                service_no
-            ].next_bus_minutes_2,
-            next_bus_minutes_3=coordinator.data[bus_stop_code][
-                service_no
-            ].next_bus_minutes_3,
+            next_bus_minutes=None,
+            next_bus_minutes_2=None,
+            next_bus_minutes_3=None,
         )
 
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle data update."""
-        bus_arrival: BusArrival = self.coordinator.data[
-            self._bus_arrival.bus_stop_code
-        ][self._bus_arrival.service_no]
+        bus_arrival: BusArrival = self._get_data(
+            self._bus_arrival.bus_stop_code,
+            self._bus_arrival.service_no,
+        )
         self._bus_arrival = bus_arrival
 
         _LOGGER.debug(
-            "Update sensor, bus_stop_code: %s, service_no: %s, data: %s",
+            "Update sensor, bus_stop_code: %s, service_no: %s, arrivals: %s",
             self._bus_arrival.bus_stop_code,
             self._bus_arrival.service_no,
             f"{self._bus_arrival.next_bus_minutes}/{self._bus_arrival.next_bus_minutes_2}/{self._bus_arrival.next_bus_minutes_3}",

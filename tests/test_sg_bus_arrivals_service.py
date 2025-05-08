@@ -8,6 +8,7 @@ import aiofiles
 from anyio import Path
 from custom_components.sg_bus_arrivals.model.bus_stop import BusStop
 from custom_components.sg_bus_arrivals.sg_bus_arrivals_service import (
+    ApiError,
     SgBusArrivalsService,
 )
 import pytest
@@ -56,6 +57,21 @@ async def test_authenticate_failed(
     mock_session.get.return_value.__aenter__.return_value = mock_response
 
     with pytest.raises(ConfigEntryAuthFailed):
+        await service.authenticate()
+
+    assert mock_session.get.called
+
+
+async def test_authenticate_error(
+    mock_session: MagicMock, service: SgBusArrivalsService
+) -> None:
+    """Test successful authentication."""
+
+    mock_response = AsyncMock()
+    mock_response.status = 500
+    mock_session.get.return_value.__aenter__.return_value = mock_response
+
+    with pytest.raises(ApiError):
         await service.authenticate()
 
     assert mock_session.get.called
@@ -128,6 +144,14 @@ async def test_get_bus_arrivals(
 
     assert mock_session.get.called
     assert arrivals
+
+
+async def test_compute_arrival_minutes(service: SgBusArrivalsService) -> None:
+    """Test compute arrival minutes."""
+
+    result: int = await service._compute_arrival_minutes("9999-12-31T12:00:00+08:00")  # noqa: SLF001
+
+    assert result > 0
 
 
 async def load_file(filename: str) -> Any:
