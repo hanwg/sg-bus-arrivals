@@ -6,6 +6,7 @@ from custom_components.sg_bus_arrivals.const import DOMAIN
 
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed
 
 
 @patch(
@@ -15,7 +16,7 @@ from homeassistant.core import HomeAssistant
 async def test_user_flow_fail(mock: MagicMock, hass: HomeAssistant) -> None:
     """Test user flow - authentication failed."""
 
-    mock.return_value = False
+    mock.side_effect = ConfigEntryAuthFailed()
 
     result = await hass.config_entries.flow.async_init(
         DOMAIN, context={"source": SOURCE_USER}, data={"api_key": "invalid_key"}

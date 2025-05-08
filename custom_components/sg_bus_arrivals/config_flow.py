@@ -17,6 +17,7 @@ from homeassistant.config_entries import (
 )
 from homeassistant.const import CONF_API_KEY
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.exceptions import ConfigEntryAuthFailed
 
 from .bus_service_subentry_flow import BusServiceSubEntryFlowHandler
 from .const import DOMAIN, SUBENTRY_TYPE
@@ -37,7 +38,9 @@ async def validate_api(
 
     service = SgBusArrivalsService(data[CONF_API_KEY])
 
-    if not await service.authenticate():
+    try:
+        await service.authenticate()
+    except ConfigEntryAuthFailed:
         errors["base"] = "invalid_auth"
 
     return errors

@@ -11,16 +11,25 @@
             "user": {
                 "data": {
                     "api_key": "API Account Key"
+                },
+                "data_description": {
+                    "api_key": "API Account Key for LTA DataMall API."
                 }
             },
             "reconfigure": {
                 "data": {
                     "api_key": "API Account Key"
+                },
+                "data_description": {
+                    "api_key": "API Account Key for LTA DataMall API."
                 }
             },
             "reauth_confirm": {
                 "data": {
                     "api_key": "API Account Key"
+                },
+                "data_description": {
+                    "api_key": "API Account Key for LTA DataMall API."
                 }
             }
         }
@@ -38,7 +47,12 @@
                         "bus_stop_code": "Bus stop code",
                         "service_no": "Bus service number"
                     },
-                    "description": "5-digit bus stop code from bus stop sign"
+                    "data_description": {
+                        "label": "Name of the sensor. This should include the bus stop name and bus service number.",
+                        "service_no": "Bus service number",
+                        "bus_stop_code": "5-digit bus stop code from the bus stop sign"
+                    },
+                    "description": "Adds a new sensor for a bus service at a bus stop."
                 }
             },
             "abort": {

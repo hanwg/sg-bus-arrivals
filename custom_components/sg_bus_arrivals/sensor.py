@@ -9,7 +9,12 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import SgBusArrivalsConfigEntry
-from .const import SUBENTRY_BUS_STOP_CODE, SUBENTRY_LABEL, SUBENTRY_SERVICE_NO
+from .const import (
+    RUNTIME_DATA_COORDINATOR,
+    SUBENTRY_BUS_STOP_CODE,
+    SUBENTRY_LABEL,
+    SUBENTRY_SERVICE_NO,
+)
 from .coordinator import BusArrivalUpdateCoordinator
 from .model.bus_arrival import BusArrival
 
@@ -24,10 +29,12 @@ async def async_setup_entry(
     """Add sensors for passed config_entry in HA."""
 
     # retrieve our api instance
-    coordinator: BusArrivalUpdateCoordinator = config_entry.runtime_data["coordinator"]
+    coordinator: BusArrivalUpdateCoordinator = config_entry.runtime_data[
+        RUNTIME_DATA_COORDINATOR
+    ]
 
     # Fetch initial data so we have data when entities subscribe
-    await coordinator.async_config_entry_first_refresh()
+    await coordinator.async_refresh()
 
     for subentry in config_entry.subentries.values():
         sensor: BusArrivalSensor = BusArrivalSensor(
@@ -39,23 +46,29 @@ async def async_setup_entry(
         async_add_entities([sensor], config_subentry_id=subentry.subentry_id)
 
 
+# Coordinator is used to centralize the data updates
+PARALLEL_UPDATES = 0
+
+
 class BusArrivalSensor(CoordinatorEntity[BusArrivalUpdateCoordinator], SensorEntity):
     """Sensor tracking the number of minutes till bus arrival."""
+
+    _attr_has_entity_name = True
 
     def __init__(
         self,
         coordinator: BusArrivalUpdateCoordinator,
-        description: str,
+        label: str,
         bus_stop_code: str,
         service_no: str,
     ) -> None:
         """Initialize the sensor."""
         super().__init__(coordinator)
 
-        self._description = description
+        self._label = label
         self._attr_device_class = SensorDeviceClass.DURATION
         self._attr_unique_id = f"{bus_stop_code}_{service_no}"
-        self._attr_name = description
+        self._attr_name = label
         self._attr_state_class = SensorStateClass.MEASUREMENT
         self._attr_native_unit_of_measurement = UnitOfTime.MINUTES
         self._attr_native_value = None
@@ -64,15 +77,23 @@ class BusArrivalSensor(CoordinatorEntity[BusArrivalUpdateCoordinator], SensorEnt
         self._bus_arrival = BusArrival(
             bus_stop_code=bus_stop_code,
             service_no=service_no,
-            next_bus_minutes=coordinator.data[bus_stop_code][service_no].next_bus_minutes,
-            next_bus_minutes_2=coordinator.data[bus_stop_code][service_no].next_bus_minutes_2,
-            next_bus_minutes_3=coordinator.data[bus_stop_code][service_no].next_bus_minutes_3
+            next_bus_minutes=coordinator.data[bus_stop_code][
+                service_no
+            ].next_bus_minutes,
+            next_bus_minutes_2=coordinator.data[bus_stop_code][
+                service_no
+            ].next_bus_minutes_2,
+            next_bus_minutes_3=coordinator.data[bus_stop_code][
+                service_no
+            ].next_bus_minutes_3,
         )
 
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle data update."""
-        bus_arrival: BusArrival = self.coordinator.data[self._bus_arrival.bus_stop_code][self._bus_arrival.service_no]
+        bus_arrival: BusArrival = self.coordinator.data[
+            self._bus_arrival.bus_stop_code
+        ][self._bus_arrival.service_no]
         self._bus_arrival = bus_arrival
 
         _LOGGER.debug(

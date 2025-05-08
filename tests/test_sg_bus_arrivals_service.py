@@ -8,12 +8,12 @@ import aiofiles
 from anyio import Path
 from custom_components.sg_bus_arrivals.model.bus_stop import BusStop
 from custom_components.sg_bus_arrivals.sg_bus_arrivals_service import (
-    ApiError,
     SgBusArrivalsService,
 )
 import pytest
 
 from config.custom_components.sg_bus_arrivals.model.bus_arrival import BusArrival
+from homeassistant.exceptions import ConfigEntryAuthFailed
 
 
 @pytest.fixture
@@ -55,11 +55,10 @@ async def test_authenticate_failed(
     mock_response.status = 401
     mock_session.get.return_value.__aenter__.return_value = mock_response
 
-    with pytest.raises(ApiError) as error:
+    with pytest.raises(ConfigEntryAuthFailed):
         await service.authenticate()
 
     assert mock_session.get.called
-    assert error.value.status == 401
 
 
 async def test_authenticate_already_authenticated(
