@@ -12,7 +12,6 @@ from . import SgBusArrivalsConfigEntry
 from .const import SUBENTRY_BUS_STOP_CODE, SUBENTRY_LABEL, SUBENTRY_SERVICE_NO
 from .coordinator import BusArrivalUpdateCoordinator
 from .model.bus_arrival import BusArrival
-from .sg_bus_arrivals_service import SgBusArrivalsService
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -25,9 +24,10 @@ async def async_setup_entry(
     """Add sensors for passed config_entry in HA."""
 
     # retrieve our api instance
-    service: SgBusArrivalsService = config_entry.runtime_data
+    coordinator: BusArrivalUpdateCoordinator = config_entry.runtime_data["coordinator"]
 
-    coordinator: BusArrivalUpdateCoordinator = BusArrivalUpdateCoordinator(hass, config_entry, service)
+    # Fetch initial data so we have data when entities subscribe
+    await coordinator.async_config_entry_first_refresh()
 
     for subentry in config_entry.subentries.values():
         sensor: BusArrivalSensor = BusArrivalSensor(
@@ -39,7 +39,7 @@ async def async_setup_entry(
         async_add_entities([sensor], config_subentry_id=subentry.subentry_id)
 
 
-class BusArrivalSensor(SensorEntity, CoordinatorEntity[BusArrivalUpdateCoordinator]):
+class BusArrivalSensor(CoordinatorEntity[BusArrivalUpdateCoordinator], SensorEntity):
     """Sensor tracking the number of minutes till bus arrival."""
 
     def __init__(
@@ -60,12 +60,13 @@ class BusArrivalSensor(SensorEntity, CoordinatorEntity[BusArrivalUpdateCoordinat
         self._attr_native_unit_of_measurement = UnitOfTime.MINUTES
         self._attr_native_value = None
         self.entity_id = f"sensor.sgbusarrivals_{self._attr_unique_id}"
+        self.icon = "mdi:bus-clock"
         self._bus_arrival = BusArrival(
             bus_stop_code=bus_stop_code,
             service_no=service_no,
-            next_bus_minutes=None,
-            next_bus_minutes_2=None,
-            next_bus_minutes_3=None
+            next_bus_minutes=coordinator.data[bus_stop_code][service_no].next_bus_minutes,
+            next_bus_minutes_2=coordinator.data[bus_stop_code][service_no].next_bus_minutes_2,
+            next_bus_minutes_3=coordinator.data[bus_stop_code][service_no].next_bus_minutes_3
         )
 
     @callback
@@ -78,7 +79,7 @@ class BusArrivalSensor(SensorEntity, CoordinatorEntity[BusArrivalUpdateCoordinat
             "Update sensor, bus_stop_code: %s, service_no: %s, data: %s",
             self._bus_arrival.bus_stop_code,
             self._bus_arrival.service_no,
-            self._bus_arrival,
+            f"{self._bus_arrival.next_bus_minutes}/{self._bus_arrival.next_bus_minutes_2}/{self._bus_arrival.next_bus_minutes_3}",
         )
         self.async_write_ha_state()
 
@@ -86,3 +87,11 @@ class BusArrivalSensor(SensorEntity, CoordinatorEntity[BusArrivalUpdateCoordinat
     def native_value(self) -> int:
         """Return the state of the entity."""
         return self._bus_arrival.next_bus_minutes
+
+    @property
+    def extra_state_attributes(self):
+        """Return the extra state attributes."""
+        attrs = {}
+        attrs["second_arrival_minutes"] = self._bus_arrival.next_bus_minutes_2
+        attrs["third_arrival_minutes"] = self._bus_arrival.next_bus_minutes_3
+        return attrs

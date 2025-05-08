@@ -31,7 +31,7 @@ class BusArrivalUpdateCoordinator(
             name="Bus arrival times",
             config_entry=config_entry,
             # Polling interval. Will only be polled if there are subscribers.
-            update_interval=timedelta(seconds=20),
+            update_interval=timedelta(seconds=120),
             # Set always_update to `False` if the data returned from the
             # api can be compared via `__eq__` to avoid duplicate updates
             # being dispatched to listeners
@@ -69,6 +69,7 @@ class BusArrivalUpdateCoordinator(
                         all_bus_arrivals[bus_arrival.bus_stop_code][bus_arrival.service_no] = (
                             bus_arrival
                         )
+                _LOGGER.debug("coordinator updated data")
                 return all_bus_arrivals
         except ApiError as err:
             raise UpdateFailed(f"Error communicating with API: {err}") from err

@@ -124,6 +124,11 @@ class SgBusArrivalsService:
         now_utc = datetime.now(UTC)
 
         minutes = (arrival_datetime - now_utc).total_seconds() / 60
+
+        # If the bus is already past, return 0
+        if minutes < 0:
+            return 0
+
         return int(minutes)  # rounded down
 
 

@@ -1,5 +1,6 @@
 """Options flow for the SG Bus Arrivals integration. Handle adding of new bus stop code."""
 
+import logging
 from typing import Any
 
 import voluptuous as vol
@@ -13,6 +14,8 @@ from homeassistant.config_entries import (
 from .const import SUBENTRY_BUS_STOP_CODE, SUBENTRY_LABEL, SUBENTRY_SERVICE_NO
 from .model.bus_stop import BusStop
 from .sg_bus_arrivals_service import SgBusArrivalsService
+
+_LOGGER = logging.getLogger(__name__)
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
@@ -32,7 +35,7 @@ async def validate_bus_stop(
 
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
-    service: SgBusArrivalsService = config_entry.runtime_data
+    service: SgBusArrivalsService = config_entry.runtime_data["service"]
     bus_stop: BusStop = await service.get_bus_stop(data)
 
     if bus_stop is None:
@@ -66,6 +69,7 @@ class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
             bus_stop: BusStop = await validate_bus_stop(
                 config_entry, user_input[SUBENTRY_BUS_STOP_CODE], errors
             )
+            _LOGGER.debug("validate_bus_stop, bus_stop: %s", bus_stop)
 
             if not errors:
                 return self.async_create_entry(

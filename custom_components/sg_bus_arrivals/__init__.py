@@ -7,12 +7,13 @@ from homeassistant.const import CONF_API_KEY, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 
-from . import sg_bus_arrivals_service
+from .coordinator import BusArrivalUpdateCoordinator
+from .sg_bus_arrivals_service import SgBusArrivalsService
 
 _PLATFORMS: list[Platform] = [Platform.SENSOR]
 
 type SgBusArrivalsConfigEntry = ConfigEntry[
-    sg_bus_arrivals_service.SgBusArrivalsService
+    SgBusArrivalsService
 ]
 
 
@@ -22,14 +23,18 @@ async def async_setup_entry(
     """Set up SG Bus Arrivals from a config entry."""
 
     # create instance of our api
-    service = sg_bus_arrivals_service.SgBusArrivalsService(entry.data[CONF_API_KEY])
+    service: SgBusArrivalsService = SgBusArrivalsService(entry.data[CONF_API_KEY])
+    coordinator: BusArrivalUpdateCoordinator = BusArrivalUpdateCoordinator(hass, entry, service)
 
     result = await service.authenticate()
     if not result:
         raise ConfigEntryAuthFailed
 
     # store reference to our api so that sensor entites can use it
-    entry.runtime_data = service
+    entry.runtime_data = {
+        "service": service,
+        "coordinator": coordinator
+    }
 
     # Registers update listener to update config entry when options are updated.
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
