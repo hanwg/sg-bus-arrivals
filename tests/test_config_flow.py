@@ -2,7 +2,7 @@
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from custom_components.sg_bus_arrivals.const import DOMAIN
+from custom_components.sg_bus_arrivals.const import DOMAIN, MIN_SCAN_INTERVAL_SECONDS
 
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.const import CONF_API_KEY, CONF_SCAN_INTERVAL
@@ -24,7 +24,10 @@ async def test_user_flow_fail_authenticate(
     result = await hass.config_entries.flow.async_init(
         DOMAIN,
         context={"source": SOURCE_USER},
-        data={CONF_API_KEY: "invalid_key", CONF_SCAN_INTERVAL: 20},
+        data={
+            CONF_API_KEY: "invalid_key",
+            CONF_SCAN_INTERVAL: MIN_SCAN_INTERVAL_SECONDS,
+        },
     )
 
     assert mock.called

@@ -20,14 +20,13 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed
 
 from .bus_service_subentry_flow import BusServiceSubEntryFlowHandler
-from .const import DOMAIN, SUBENTRY_TYPE
+from .const import DOMAIN, MIN_SCAN_INTERVAL_SECONDS, SUBENTRY_TYPE
 from .sg_bus_arrivals_service import SgBusArrivalsService
 
 _LOGGER = logging.getLogger(__name__)
 
-MIN_SCAN_INTERVAL = 20
 STEP_USER_DATA_API_SCHEMA = vol.Schema(
-    {vol.Required(CONF_API_KEY): str, vol.Required(CONF_SCAN_INTERVAL, default=MIN_SCAN_INTERVAL): int}
+    {vol.Required(CONF_API_KEY): str, vol.Required(CONF_SCAN_INTERVAL, default=MIN_SCAN_INTERVAL_SECONDS): int}
 )
 
 
@@ -39,7 +38,7 @@ async def validate_api(
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
 
-    if data[CONF_SCAN_INTERVAL] < MIN_SCAN_INTERVAL:
+    if data[CONF_SCAN_INTERVAL] < MIN_SCAN_INTERVAL_SECONDS:
         errors["base"] = "invalid_scan_interval"
         return errors
 

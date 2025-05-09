@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 from custom_components.sg_bus_arrivals.const import (
     DOMAIN,
+    MIN_SCAN_INTERVAL_SECONDS,
     SUBENTRY_BUS_STOP_CODE,
     SUBENTRY_LABEL,
     SUBENTRY_SERVICE_NO,
@@ -36,7 +37,7 @@ async def test_async_step_init(
     config_entry = MockConfigEntry(
         domain=DOMAIN,
         unique_id="test_api",
-        data={CONF_API_KEY: "dummy account key", CONF_SCAN_INTERVAL: 20},
+        data={CONF_API_KEY: "dummy account key", CONF_SCAN_INTERVAL: MIN_SCAN_INTERVAL_SECONDS},
     )
 
     config_entry.add_to_hass(hass)
@@ -58,6 +59,7 @@ async def test_async_step_init(
             SUBENTRY_SERVICE_NO: "mock_service_no",
         },
     )
+    await hass.async_block_till_done()
 
     assert mock_get_bus_stop.called
     assert result["result"]
@@ -81,7 +83,7 @@ async def test_async_step_init_fail(
     config_entry = MockConfigEntry(
         domain=DOMAIN,
         unique_id="test_api",
-        data={CONF_API_KEY: "dummy account key", CONF_SCAN_INTERVAL: 20},
+        data={CONF_API_KEY: "dummy account key", CONF_SCAN_INTERVAL: MIN_SCAN_INTERVAL_SECONDS},
     )
 
     config_entry.add_to_hass(hass)
@@ -129,7 +131,7 @@ async def test_async_step_init_duplicate(
     config_entry = MockConfigEntry(
         domain=DOMAIN,
         unique_id="test_api",
-        data={CONF_API_KEY: "mock account key", CONF_SCAN_INTERVAL: 20},
+        data={CONF_API_KEY: "mock account key", CONF_SCAN_INTERVAL: MIN_SCAN_INTERVAL_SECONDS},
         subentries_data=[
             ConfigSubentryData(
                 data={
