@@ -1,8 +1,18 @@
 {
   "config": {
-    "user":{},
+    "step":{
+      "user": {
+        "data": {
+            "api_key": "API Account Key",
+            "scan_interval": "Scan interval (seconds)"
+        },
+        "data_description": {
+            "api_key": "API Account Key for LTA DataMall API.",
+            "scan_interval": "The frequency to fetch data from the LTA DataMall API. Minimum is 20 seconds."
+        }
+      }
+    },
     "error": {
-      "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
       "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
       "unknown": "[%key:common::config_flow::error::unknown%]"
     },
