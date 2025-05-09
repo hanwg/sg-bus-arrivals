@@ -12,21 +12,21 @@
             "user": {
                 "data": {
                     "api_key": "API Account Key",
-                    "scan_interval": "Refresh interval (seconds)"
+                    "scan_interval": "Scan interval (seconds)"
                 },
                 "data_description": {
                     "api_key": "API Account Key for LTA DataMall API.",
-                    "scan_interval": "Time interval (in seconds) to refresh the data. Min is 20 seconds."
+                    "scan_interval": "The frequency to fetch data from the LTA DataMall API. Minimum is 20 seconds."
                 }
             },
             "reconfigure": {
                 "data": {
                     "api_key": "API Account Key",
-                    "scan_interval": "Refresh interval (seconds)"
+                    "scan_interval": "Scan interval (seconds)"
                 },
                 "data_description": {
                     "api_key": "API Account Key for LTA DataMall API.",
-                    "scan_interval": "Time interval (in seconds) to refresh the data. Min is 20 seconds."
+                    "scan_interval": "The frequency to fetch data from the LTA DataMall API. Minimum is 20 seconds."
                 }
             },
             "reauth_confirm": {
