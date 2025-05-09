@@ -3,7 +3,7 @@
 <img src="images/icon@2x.png" alt="SG bus arrivals icon" width="128" height="128" />
 
 A custom integration for [Home Assistant](https://www.home-assistant.io/).
-This integration uses the [LTA DataMall API](https://datamall.lta.gov.sg/content/datamall/en/dynamic-data.html) to fetch bus arrival times.
+This integration uses the [LTA DataMall API](https://datamall.lta.gov.sg/content/datamall/en/dynamic-data.html) to fetch bus arrival times for all public bus services operating in Singapore.
 
 ## Installation
 
@@ -35,7 +35,7 @@ Add the integration:
 - **Scan interval**: The frequency (seconds) to fetch data from the LTA DataMall API. A minimum limit of 20 seconds has been imposed to avoid rate-limiting issues.
 
 Upon successful configuration, you should see a single **LTA DataMall API** entry.
-Continue with the [Add bus arrival sensor](#add-bus-arrival-sensor) section below to add sensors for bus arrival times.<br/>
+Continue with the [Add new bus arrival sensor](#add-new-bus-arrival-sensor) section below to add sensors for bus arrival times.<br/>
 ![](images/config-entry.png)
 
 ## Add new bus arrival sensor
@@ -53,7 +53,54 @@ Click on the "..." icon on the right of the **LTA DataMall API** entry and selec
 - **Bus stop code**: The unique 5-digit bus stop code. Use the [LTA Transport Tools (Bus Services)](https://www.lta.gov.sg/content/ltagov/en/map/bus.html) to search for your bus stops and bus services.
 - **Bus service number**: The bus service number at the bus stop.
 
-🎉 Congratulations! You have successfully added a new sensor to track bus arrival. You can add more sensors if you like or read on for more details about the integration.
+After adding a sensor, you should be able to see a new subentry.
+The following example subentry was created using label `12 @Hotel Grand Pacific`, bus stop code `01012` and service number `12`.<br/>
+![](images/subentry.png)
+
+### Sensor details
+
+To view the sensor details, click on the entity under the subentry.
+![](images/sensor.png)
+
+🎉 Congratulations! You have successfully added a new sensor to track bus arrivals. You can add more sensors if you like or read on for more details about the integration.
+
+## Use cases
+
+This section discusses some examples on how you can use this integration.
+
+### Dashboard
+
+Add the sensor to a dashboard to quickly view bus arrival times.
+The folowing is an example from the default dashboard:<br/>
+![](images/dashboard.png)
+
+### Automation: Send bus arrival notification when leaving home
+
+This automation sends a notification with the bus arrivals to your home assistant companion mobile app when you leave the house.
+
+**Triggers**<br/>
+The following trigger monitors the WiFi state of your phone using sensors from your home assistant companion mobile app. The trigger activates when you are disconnected from the given WiFi SSID (i.e. you left the house). Update `your_device` and `your_wifi_ssid` accordingly.
+```
+trigger: state
+entity_id:
+  - sensor.<your_device>_wifi_connection
+from: <your_wifi_ssid>
+```
+
+**Actions**<br/>
+The following action sends a notification to your home assistant companion mobile app. The notification is automatically dismissed after the timeout (120 seconds in this example) expires. Update `your_device`, `bus_stop_code` and `service_no` accordingly.
+```
+action: notify.mobile_app_<your_device>
+data:
+    title: Bus Arrivals
+    message: >-
+        {{ states('sensor.sgbusarrivals_<bus_stop_code>_<service_no>') }}
+    data:
+        tag: bus arrivals
+        channel: Bus arrivals
+        timeout: 120
+        alert_once: true
+```
 
 ## Supported functionality
 
