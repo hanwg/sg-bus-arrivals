@@ -6,6 +6,7 @@ import collections
 from datetime import timedelta
 import logging
 
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
@@ -15,6 +16,8 @@ from .sg_bus_arrivals_service import ApiError, SgBusArrivalsService
 
 _LOGGER = logging.getLogger(__name__)
 
+type SgBusArrivalsConfigEntry = ConfigEntry[SgBusArrivalsService]
+
 
 class BusArrivalUpdateCoordinator(
     DataUpdateCoordinator[dict[str, dict[str, BusArrival]]]
@@ -22,7 +25,11 @@ class BusArrivalUpdateCoordinator(
     """Coordinator that polls for bus arrival times."""
 
     def __init__(
-        self, hass: HomeAssistant, config_entry, service: SgBusArrivalsService, scan_interval: int
+        self,
+        hass: HomeAssistant,
+        config_entry: SgBusArrivalsConfigEntry,
+        service: SgBusArrivalsService,
+        scan_interval: int,
     ) -> None:
         """Initialize my coordinator."""
         super().__init__(
@@ -49,7 +56,9 @@ class BusArrivalUpdateCoordinator(
         for subentry in self.config_entry.subentries.values():
             bus_stop_codes.add(subentry.data[SUBENTRY_BUS_STOP_CODE])
 
-        all_bus_arrivals: dict[str, dict[str, BusArrival]] = collections.defaultdict(dict)
+        all_bus_arrivals: dict[str, dict[str, BusArrival]] = collections.defaultdict(
+            dict
+        )
         try:
             # Note: asyncio.TimeoutError and aiohttp.ClientError are already
             # handled by the data update coordinator.
@@ -66,9 +75,9 @@ class BusArrivalUpdateCoordinator(
 
                     # Populate the data structure with bus arrivals.
                     for bus_arrival in bus_arrivals:
-                        all_bus_arrivals[bus_arrival.bus_stop_code][bus_arrival.service_no] = (
-                            bus_arrival
-                        )
+                        all_bus_arrivals[bus_arrival.bus_stop_code][
+                            bus_arrival.service_no
+                        ] = bus_arrival
                 _LOGGER.debug("coordinator updated data")
                 return all_bus_arrivals
         except ApiError as err:

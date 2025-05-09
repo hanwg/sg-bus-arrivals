@@ -25,7 +25,7 @@ from .sg_bus_arrivals_service import SgBusArrivalsService
 
 _LOGGER = logging.getLogger(__name__)
 
-STEP_USER_DATA_API_SCHEMA = vol.Schema(
+STEP_USER_DATA_API_SCHEMA: vol.Schema = vol.Schema(
     {vol.Required(CONF_API_KEY): str, vol.Required(CONF_SCAN_INTERVAL, default=MIN_SCAN_INTERVAL_SECONDS): int}
 )
 
@@ -42,7 +42,7 @@ async def validate_api(
         errors["base"] = "invalid_scan_interval"
         return errors
 
-    service = SgBusArrivalsService(data[CONF_API_KEY])
+    service: SgBusArrivalsService = SgBusArrivalsService(data[CONF_API_KEY])
 
     try:
         await service.authenticate()

@@ -12,12 +12,13 @@ from homeassistant.config_entries import (
 )
 
 from .const import SUBENTRY_BUS_STOP_CODE, SUBENTRY_LABEL, SUBENTRY_SERVICE_NO
+from .coordinator import SgBusArrivalsConfigEntry
 from .model.bus_stop import BusStop
 from .sg_bus_arrivals_service import SgBusArrivalsService
 
 _LOGGER = logging.getLogger(__name__)
 
-STEP_USER_DATA_SCHEMA = vol.Schema(
+STEP_USER_DATA_SCHEMA: vol.Schema = vol.Schema(
     {
         vol.Required(SUBENTRY_LABEL): str,
         vol.Required(SUBENTRY_BUS_STOP_CODE): str,
@@ -53,7 +54,7 @@ class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
         """Handle adding of new bus stop code."""
         errors: dict[str, str] = {}
         if user_input is not None:
-            config_entry = self._get_entry()
+            config_entry: SgBusArrivalsConfigEntry = self._get_entry()
             for existing_subentry in config_entry.subentries.values():
                 if (
                     existing_subentry.unique_id

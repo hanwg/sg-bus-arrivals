@@ -58,8 +58,8 @@ class SgBusArrivalsService:
     async def get_bus_stop(self, bus_stop_code: str) -> BusStop:
         """Get bus stop information by bus stop code."""
 
-        response = await self._get_request("/BusStops")
-        bus_stop = next(
+        response: Any = await self._get_request("/BusStops")
+        bus_stop: dict[str, str] = next(
             (
                 bus_stop
                 for bus_stop in response["value"]
@@ -80,7 +80,7 @@ class SgBusArrivalsService:
     async def get_bus_services(self, bus_stop_code: str) -> list[str]:
         """Get bus services."""
 
-        response = await self._get_request("/BusRoutes")
+        response: Any = await self._get_request("/BusRoutes")
 
         return [
             bus_stop["ServiceNo"]
@@ -93,7 +93,7 @@ class SgBusArrivalsService:
     async def get_bus_arrivals(self, bus_stop_code: str) -> list[BusArrival]:
         """Get bus arrivals."""
 
-        response = await self._get_request(
+        response: Any = await self._get_request(
             f"/v3/BusArrival?BusStopCode={bus_stop_code}"
         )
 
@@ -120,10 +120,10 @@ class SgBusArrivalsService:
         if arrival_str == "":
             return None
 
-        arrival_datetime = datetime.fromisoformat(arrival_str)
-        now_utc = datetime.now(UTC)
+        arrival_datetime: datetime = datetime.fromisoformat(arrival_str)
+        now_utc: datetime = datetime.now(UTC)
 
-        minutes = (arrival_datetime - now_utc).total_seconds() / 60
+        minutes: float = (arrival_datetime - now_utc).total_seconds() / 60
 
         # If the bus is already past, return 0
         if minutes < 0:
