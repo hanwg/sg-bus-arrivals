@@ -5,30 +5,79 @@
 A custom integration for [Home Assistant](https://www.home-assistant.io/).
 This integration uses the [LTA DataMall API](https://datamall.lta.gov.sg/content/datamall/en/dynamic-data.html) to fetch bus arrival times.
 
-## Pre-requisites
-
-To use this integration, you first need to get an **Account Key** by [requesting for LTA DataMall API access](https://datamall.lta.gov.sg/content/datamall/en/request-for-api.html).
-
 ## Installation
 
-**Manual installation**
+You can install using either of the following methods:
+- HACS installation (easiest)
+- Manual installation
+
+After installation is completed, continue with the [Configuration](#configuration) section below.
+
+### HACS installation
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=hanwg&repository=sg-bus-arrivals&category=integration)
+
+### Manual installation
 
 Copy the `custom_components/sg_bus_arrivals` folder and all of its contents into your Home Assistant's `/config/custom_components` folder.
 
-## Adding the Integration
-
-1. Login to your Home Assistant instance.
-2. Go to **Settings** > **Devices & services**
-3. Click on the **ADD INTEGRATION** button.
-4. In the **Select brand** dialog, enter `SG Bus Arrivals` in the search box and select the integration.
-5. Enter the **Account Key** (refer to the Pre-requisites section) when prompted and click on the **Submit** button to configure the integration.
-![](images/add-integration.png)
-
 ## Configuration
 
-After the integration has been added, you can configure the integration to add bus stops and bus services which will be exposed as a sensor to track bus arrival times.
+Add the integration:
+**Settings** > **Devices & services** > **ADD INTEGRATION** > **SG Bus Arrivals**
 
-1. Go to **Settings** > **Devices & services**.
-2. Click on the **SG Bus Arrivals** integration.
-3. Click on the **CONFIGURE** button to add a new bus stop.
-![](images/configure.png)
+### Required manual input
+
+![](images/configuration.png)
+
+- **API account key**: Used for authenticating with the LTA DataMall API. To get an API account key, you need to [request for LTA DataMall API access](https://datamall.lta.gov.sg/content/datamall/en/request-for-api.html).
+
+- **Scan interval**: The frequency (seconds) to fetch data from the LTA DataMall API. A minimum limit of 20 seconds has been imposed to avoid rate-limiting issues.
+
+Upon successful configuration, you should see a single **LTA DataMall API** entry.
+Continue with the [Add bus arrival sensor](#add-bus-arrival-sensor) section below to add sensors for bus arrival times.<br/>
+![](images/config-entry.png)
+
+## Add new bus arrival sensor
+
+Go to **Settings** > **Devices & services** > **SG Bus Arrivals**.
+
+Click on the "..." icon on the right of the **LTA DataMall API** entry and select **Add new bus arrival sensor**.<br/>
+![](images/add-new-bus-arrival-sensor.png)
+
+### Required manual input
+
+![](images/add-new-bus-arrival-sensor-fields.png)
+
+- **Label**: A user-friendly display name for the sensor. It is strongly recommended to include the bus service number and a short description of the bus stop for easy reference.
+- **Bus stop code**: The unique 5-digit bus stop code. Use the [LTA Transport Tools (Bus Services)](https://www.lta.gov.sg/content/ltagov/en/map/bus.html) to search for your bus stops and bus services.
+- **Bus service number**: The bus service number at the bus stop.
+
+🎉 Congratulations! You have successfully added a new sensor to track bus arrival. You can add more sensors if you like or read on for more details about the integration.
+
+## Supported functionality
+
+### Sensors
+
+The bus arrival sensor is created via the [Add new bus arrival sensor](#add-new-bus-arrival-sensor) setup. The sensor has the following properties:
+- The sensor shows the **estimated** (as per LTA DataMall API) next bus arrival in minutes.
+- The sensor has a precision of up to 1 minute (as per LTA DataMall API).
+- If the sensor shows "0", it means the bus is arriving soon, is already at the bus stop or has just left the bus stop.
+- If there are no more bus arrivals (e.g. last bus already departed), the sensor will show "unknown". If there was an error fetching the arrival time, the sensor will show "unavailable".
+- The second and third arrival times are also available as additional attributes in the sensor (`second_arrival_minutes` and `third_arrival_minutes` respectively).
+
+## Sensor naming and IDs
+
+Sensor name is based on the **Label** specified during the [Add new bus arrival sensor](#add-new-bus-arrival-sensor) setup.
+
+Sensor entity ID has the following naming convention: `sensor.sgbusarrivals_<bus_stop_code>_<service_no>`<br/>
+For example, for bus service number 145 at bus stop code 01029, the sensor entity id will be: `sensor.sgbusarrivals_01029_145`
+
+## Reconfiguration
+
+This integration supports reconfiguration, allowing you to make changes to the **API account key** and **Scan interval**. Restart is not required upon successful reconfiguration.
+
+## Removing the integration
+
+Deleting the **LTA DataMall API** configuration entry will remove the integration.
+ALL related sensors will also be deleted.

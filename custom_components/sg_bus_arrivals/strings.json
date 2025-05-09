@@ -3,11 +3,11 @@
     "step":{
       "user": {
         "data": {
-            "api_key": "API Account Key",
+            "api_key": "API account key",
             "scan_interval": "Scan interval (seconds)"
         },
         "data_description": {
-            "api_key": "API Account Key for LTA DataMall API.",
+            "api_key": "API account key for LTA DataMall API.",
             "scan_interval": "The frequency to fetch data from the LTA DataMall API. Minimum is 20 seconds."
         }
       }
