@@ -19,8 +19,8 @@ from homeassistant.const import CONF_API_KEY, CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed
 
+from .api import SgBusArrivalsService
 from .const import DOMAIN, MIN_SCAN_INTERVAL_SECONDS, SUBENTRY_TYPE
-from .sg_bus_arrivals_service import SgBusArrivalsService
 from .subentry_flow import BusServiceSubEntryFlowHandler
 
 _LOGGER = logging.getLogger(__name__)

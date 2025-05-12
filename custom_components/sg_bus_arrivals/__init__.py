@@ -6,9 +6,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_API_KEY, CONF_SCAN_INTERVAL, Platform
 from homeassistant.core import HomeAssistant
 
-from .const import RUNTIME_DATA_COORDINATOR, RUNTIME_DATA_SERVICE
+from .api import SgBusArrivalsService
 from .coordinator import BusArrivalUpdateCoordinator, SgBusArrivalsConfigEntry
-from .sg_bus_arrivals_service import SgBusArrivalsService
 
 _PLATFORMS: list[Platform] = [Platform.SENSOR]
 
@@ -27,10 +26,7 @@ async def async_setup_entry(
     await service.authenticate()
 
     # store reference to our api so that sensor entites can use it
-    entry.runtime_data = {
-        RUNTIME_DATA_SERVICE: service,
-        RUNTIME_DATA_COORDINATOR: coordinator,
-    }
+    entry.runtime_data = coordinator
 
     # Registers update listener to update config entry when options are updated.
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))

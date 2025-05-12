@@ -6,6 +6,7 @@ from typing import Any
 
 import aiohttp
 
+from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 
 from . import const

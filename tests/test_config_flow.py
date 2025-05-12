@@ -11,7 +11,7 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 
 
 @patch(
-    "custom_components.sg_bus_arrivals.sg_bus_arrivals_service.SgBusArrivalsService.authenticate",
+    "custom_components.sg_bus_arrivals.api.SgBusArrivalsService.authenticate",
     new_callable=AsyncMock,
 )
 async def test_user_flow_fail_authenticate(

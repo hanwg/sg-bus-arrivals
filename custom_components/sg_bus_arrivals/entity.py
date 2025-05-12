@@ -6,7 +6,6 @@ from typing import Any
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import SgBusArrivalsConfigEntry
-from .const import RUNTIME_DATA_COORDINATOR
 from .coordinator import BusArrivalUpdateCoordinator
 from .models import BusArrival
 
@@ -18,7 +17,7 @@ class BusArrivalEntity(CoordinatorEntity[BusArrivalUpdateCoordinator]):
 
     def __init__(self, config_entry: SgBusArrivalsConfigEntry) -> None:
         """Initialize."""
-        super().__init__(config_entry.runtime_data[RUNTIME_DATA_COORDINATOR])
+        super().__init__(config_entry.runtime_data)
         self._entry = config_entry
 
     @property

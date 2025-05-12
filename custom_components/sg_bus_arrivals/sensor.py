@@ -8,12 +8,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import SgBusArrivalsConfigEntry
-from .const import (
-    RUNTIME_DATA_COORDINATOR,
-    SUBENTRY_BUS_STOP_CODE,
-    SUBENTRY_LABEL,
-    SUBENTRY_SERVICE_NO,
-)
+from .const import SUBENTRY_BUS_STOP_CODE, SUBENTRY_LABEL, SUBENTRY_SERVICE_NO
 from .coordinator import BusArrivalUpdateCoordinator
 from .entity import BusArrivalEntity
 from .models import BusArrival
@@ -29,9 +24,7 @@ async def async_setup_entry(
     """Add sensors for passed config_entry in HA."""
 
     # retrieve our api instance
-    coordinator: BusArrivalUpdateCoordinator = config_entry.runtime_data[
-        RUNTIME_DATA_COORDINATOR
-    ]
+    coordinator: BusArrivalUpdateCoordinator = config_entry.runtime_data
 
     # Fetch initial data so we have data when entities subscribe
     await coordinator.async_refresh()

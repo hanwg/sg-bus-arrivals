@@ -10,9 +10,9 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
+from .api import ApiError, SgBusArrivalsService
 from .const import SUBENTRY_BUS_STOP_CODE
 from .models import BusArrival
-from .sg_bus_arrivals_service import ApiError, SgBusArrivalsService
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -45,6 +45,10 @@ class BusArrivalUpdateCoordinator(
             always_update=True,
         )
         self._service = service
+
+    def get_service(self) -> SgBusArrivalsService:
+        """Return the service instance."""
+        return self._service
 
     async def _async_update_data(self):
         """Fetch data from API endpoint.

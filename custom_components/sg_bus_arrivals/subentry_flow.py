@@ -11,10 +11,10 @@ from homeassistant.config_entries import (
     SubentryFlowResult,
 )
 
+from .api import SgBusArrivalsService
 from .const import SUBENTRY_BUS_STOP_CODE, SUBENTRY_LABEL, SUBENTRY_SERVICE_NO
-from .coordinator import SgBusArrivalsConfigEntry
+from .coordinator import BusArrivalUpdateCoordinator, SgBusArrivalsConfigEntry
 from .models import BusStop
-from .sg_bus_arrivals_service import SgBusArrivalsService
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -36,7 +36,8 @@ async def validate_bus_stop(
 
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
-    service: SgBusArrivalsService = config_entry.runtime_data["service"]
+    coordinator: BusArrivalUpdateCoordinator = config_entry.runtime_data
+    service: SgBusArrivalsService = coordinator.get_service()
     bus_stop: BusStop = await service.get_bus_stop(data)
 
     if bus_stop is None:

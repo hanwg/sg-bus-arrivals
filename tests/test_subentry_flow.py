@@ -19,11 +19,11 @@ from homeassistant.core import HomeAssistant
 
 
 @patch(
-    "custom_components.sg_bus_arrivals.sg_bus_arrivals_service.SgBusArrivalsService.authenticate",
+    "custom_components.sg_bus_arrivals.api.SgBusArrivalsService.authenticate",
     new_callable=AsyncMock,
 )
 @patch(
-    "custom_components.sg_bus_arrivals.sg_bus_arrivals_service.SgBusArrivalsService.get_bus_stop",
+    "custom_components.sg_bus_arrivals.api.SgBusArrivalsService.get_bus_stop",
     new_callable=AsyncMock,
 )
 async def test_async_step_init(
@@ -68,11 +68,11 @@ async def test_async_step_init(
 
 
 @patch(
-    "custom_components.sg_bus_arrivals.sg_bus_arrivals_service.SgBusArrivalsService.authenticate",
+    "custom_components.sg_bus_arrivals.api.SgBusArrivalsService.authenticate",
     new_callable=AsyncMock,
 )
 @patch(
-    "custom_components.sg_bus_arrivals.sg_bus_arrivals_service.SgBusArrivalsService.get_bus_stop",
+    "custom_components.sg_bus_arrivals.api.SgBusArrivalsService.get_bus_stop",
     new_callable=AsyncMock,
 )
 async def test_async_step_init_fail(
@@ -110,11 +110,11 @@ async def test_async_step_init_fail(
 
 
 @patch(
-    "custom_components.sg_bus_arrivals.sg_bus_arrivals_service.SgBusArrivalsService.authenticate",
+    "custom_components.sg_bus_arrivals.api.SgBusArrivalsService.authenticate",
     new_callable=AsyncMock,
 )
 @patch(
-    "custom_components.sg_bus_arrivals.sg_bus_arrivals_service.SgBusArrivalsService.get_bus_arrivals",
+    "custom_components.sg_bus_arrivals.api.SgBusArrivalsService.get_bus_arrivals",
     new_callable=AsyncMock,
 )
 async def test_async_step_init_duplicate(
