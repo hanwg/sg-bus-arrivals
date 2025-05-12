@@ -20,5 +20,18 @@
       "already_configured": "[%key:common::config_flow::abort::already_configured_device%]",
       "reconfigure_successful": "[%key:common::config_flow::abort::reconfigure_successful%]"
     }
+  },
+  "entity": {
+    "sensor": {
+      "1st_arrival": {
+                "name": "{service_no} @{description} (1st arrival)"
+            },
+            "2nd_arrival": {
+                "name": "{service_no} @{description} (2nd arrival)"
+            },
+            "3rd_arrival": {
+                "name": "{service_no} @{description} (3rd arrival)"
+            }
+    }
   }
 }

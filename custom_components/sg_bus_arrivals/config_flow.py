@@ -28,12 +28,19 @@ from .subentry_flow import BusServiceSubEntryFlowHandler
 
 _LOGGER = logging.getLogger(__name__)
 
-STEP_USER_DATA_API_SCHEMA: vol.Schema = vol.Schema(
-    {
-        vol.Required(CONF_API_KEY): str,
-        vol.Required(CONF_SCAN_INTERVAL, default=MIN_SCAN_INTERVAL_SECONDS): vol.Range(min=MIN_SCAN_INTERVAL_SECONDS),
-    }
-)
+
+def get_data_schema(
+    api_key: str | None = None, scan_interval: int = MIN_SCAN_INTERVAL_SECONDS
+) -> vol.Schema:
+    """Return the schema for the config flow."""
+    return vol.Schema(
+        {
+            vol.Required(CONF_API_KEY, default=api_key): str,
+            vol.Required(CONF_SCAN_INTERVAL, default=scan_interval): vol.All(
+                vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL_SECONDS)
+            ),
+        }
+    )
 
 
 class SgBusArrivalsConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -68,7 +75,7 @@ class SgBusArrivalsConfigFlow(ConfigFlow, domain=DOMAIN):
                 )
 
         return self.async_show_form(
-            step_id="user", data_schema=STEP_USER_DATA_API_SCHEMA, errors=errors
+            step_id="user", data_schema=get_data_schema(), errors=errors
         )
 
     async def async_step_reconfigure(self, user_input: dict[str, Any] | None = None):
@@ -89,12 +96,7 @@ class SgBusArrivalsConfigFlow(ConfigFlow, domain=DOMAIN):
         scan_interval: str = self._get_reconfigure_entry().data[CONF_SCAN_INTERVAL]
         return self.async_show_form(
             step_id="reconfigure",
-            data_schema=vol.Schema(
-                {
-                    vol.Required(CONF_API_KEY, default=api_key): str,
-                    vol.Required(CONF_SCAN_INTERVAL, default=scan_interval): int,
-                }
-            ),
+            data_schema=get_data_schema(api_key, scan_interval),
             errors=errors,
         )
 
@@ -134,6 +136,6 @@ class SgBusArrivalsConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input is None:
             return self.async_show_form(
                 step_id="reauth_confirm",
-                data_schema=STEP_USER_DATA_API_SCHEMA,
+                data_schema=vol.Schema({vol.Required(CONF_API_KEY): str}),
             )
         return await self.async_step_user()

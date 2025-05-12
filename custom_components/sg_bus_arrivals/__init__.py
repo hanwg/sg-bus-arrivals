@@ -10,6 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import SgBusArrivalsService
+from .const import DOMAIN, SERVICE_REFRESH_BUS_ARRIVALS
 from .coordinator import BusArrivalUpdateCoordinator, SgBusArrivalsConfigEntry
 
 _PLATFORMS: list[Platform] = [Platform.SENSOR]
@@ -35,6 +36,14 @@ async def async_setup_entry(
     # Registers update listener to update config entry when options are updated.
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
+    async def refresh_bus_arrivals(call) -> None:
+        """Service call to refresh the bus arrivals."""
+        await coordinator.async_request_refresh()
+
+    hass.services.async_register(
+        DOMAIN, SERVICE_REFRESH_BUS_ARRIVALS, refresh_bus_arrivals
+    )
+
     # pass config to sensor.py to create sensor entites
     await hass.config_entries.async_forward_entry_setups(entry, _PLATFORMS)
 
@@ -49,5 +58,10 @@ async def _async_update_listener(hass: HomeAssistant, config_entry: ConfigEntry)
 async def async_unload_entry(
     hass: HomeAssistant, entry: SgBusArrivalsConfigEntry
 ) -> bool:
-    """Unload a config entry."""
-    return await hass.config_entries.async_unload_platforms(entry, _PLATFORMS)
+    """Unload services and config entry."""
+
+    isUnloaded: bool = await hass.config_entries.async_unload_platforms(entry, _PLATFORMS)
+
+    hass.services.async_remove(DOMAIN, SERVICE_REFRESH_BUS_ARRIVALS)
+
+    return isUnloaded

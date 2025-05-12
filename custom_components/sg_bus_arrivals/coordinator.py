@@ -3,6 +3,7 @@
 import asyncio
 from asyncio import timeout
 import collections
+from dataclasses import dataclass
 from datetime import timedelta
 import logging
 
@@ -16,7 +17,7 @@ from .models import BusArrival
 
 _LOGGER = logging.getLogger(__name__)
 
-type SgBusArrivalsConfigEntry = ConfigEntry[SgBusArrivalsService]
+type SgBusArrivalsConfigEntry = ConfigEntry[BusArrivalUpdateCoordinator]
 
 
 class BusArrivalUpdateCoordinator(

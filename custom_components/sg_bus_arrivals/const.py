@@ -8,3 +8,5 @@ SUBENTRY_TYPE = "bus_service"
 SUBENTRY_LABEL = "label"
 SUBENTRY_BUS_STOP_CODE = "bus_stop_code"
 SUBENTRY_SERVICE_NO = "service_no"
+
+SERVICE_REFRESH_BUS_ARRIVALS = "refresh_bus_arrivals"

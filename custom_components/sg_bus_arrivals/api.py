@@ -98,20 +98,20 @@ class SgBusArrivalsService:
             BusArrival(
                 response["BusStopCode"],
                 bus_arrival["ServiceNo"],
-                await self._compute_arrival_minutes(
+                self._compute_arrival_minutes(
                     bus_arrival["NextBus"]["EstimatedArrival"]
                 ),
-                await self._compute_arrival_minutes(
+                self._compute_arrival_minutes(
                     bus_arrival["NextBus2"]["EstimatedArrival"]
                 ),
-                await self._compute_arrival_minutes(
+                self._compute_arrival_minutes(
                     bus_arrival["NextBus3"]["EstimatedArrival"]
                 ),
             )
             for bus_arrival in response["Services"]
         ]
 
-    async def _compute_arrival_minutes(self, arrival_str: str) -> int:
+    def _compute_arrival_minutes(self, arrival_str: str) -> int:
         """Compute arrival minutes."""
 
         if arrival_str == "":

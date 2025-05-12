@@ -69,5 +69,18 @@
                 "invalid_bus_stop_code": "Invalid bus stop code"
             }
         }
+    },
+    "entity": {
+        "sensor": {
+            "1st_arrival": {
+                "name": "{service_no} @{description} (1st arrival)"
+            },
+            "2nd_arrival": {
+                "name": "{service_no} @{description} (2nd arrival)"
+            },
+            "3rd_arrival": {
+                "name": "{service_no} @{description} (3rd arrival)"
+            }
+        }
     }
 }
