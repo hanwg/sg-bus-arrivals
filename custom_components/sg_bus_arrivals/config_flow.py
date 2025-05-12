@@ -6,6 +6,7 @@ from collections.abc import Mapping
 import logging
 from typing import Any
 
+from aiohttp import ClientSession
 import voluptuous as vol
 
 from homeassistant.config_entries import (
@@ -16,40 +17,23 @@ from homeassistant.config_entries import (
     ConfigSubentryFlow,
 )
 from homeassistant.const import CONF_API_KEY, CONF_SCAN_INTERVAL
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import callback
 from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import SgBusArrivalsService
 from .const import DOMAIN, MIN_SCAN_INTERVAL_SECONDS, SUBENTRY_TYPE
+from .coordinator import BusArrivalUpdateCoordinator
 from .subentry_flow import BusServiceSubEntryFlowHandler
 
 _LOGGER = logging.getLogger(__name__)
 
 STEP_USER_DATA_API_SCHEMA: vol.Schema = vol.Schema(
-    {vol.Required(CONF_API_KEY): str, vol.Required(CONF_SCAN_INTERVAL, default=MIN_SCAN_INTERVAL_SECONDS): int}
+    {
+        vol.Required(CONF_API_KEY): str,
+        vol.Required(CONF_SCAN_INTERVAL, default=MIN_SCAN_INTERVAL_SECONDS): vol.Range(min=MIN_SCAN_INTERVAL_SECONDS),
+    }
 )
-
-
-async def validate_api(
-    hass: HomeAssistant, data: dict[str, Any], errors: dict[str, str]
-) -> None:
-    """Validate the user input allows us to connect.
-
-    Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
-    """
-
-    if data[CONF_SCAN_INTERVAL] < MIN_SCAN_INTERVAL_SECONDS:
-        errors["base"] = "invalid_scan_interval"
-        return errors
-
-    service: SgBusArrivalsService = SgBusArrivalsService(data[CONF_API_KEY])
-
-    try:
-        await service.authenticate()
-    except ConfigEntryAuthFailed:
-        errors["base"] = "invalid_auth"
-
-    return errors
 
 
 class SgBusArrivalsConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -72,7 +56,7 @@ class SgBusArrivalsConfigFlow(ConfigFlow, domain=DOMAIN):
 
         errors: dict[str, str] = {}
         if user_input is not None:
-            await validate_api(self.hass, user_input, errors)
+            await self.validate_api(user_input, errors)
             if not errors:
                 if self.source == SOURCE_REAUTH:
                     return self.async_update_reload_and_abort(
@@ -94,7 +78,7 @@ class SgBusArrivalsConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             self._abort_if_unique_id_mismatch()
 
-            await validate_api(self.hass, user_input, errors)
+            await self.validate_api(user_input, errors)
 
             if not errors:
                 return self.async_update_reload_and_abort(
@@ -113,6 +97,28 @@ class SgBusArrivalsConfigFlow(ConfigFlow, domain=DOMAIN):
             ),
             errors=errors,
         )
+
+    async def validate_api(self, data: dict[str, Any], errors: dict[str, str]) -> None:
+        """Validate the user input allows us to connect.
+
+        Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
+        """
+
+        service: SgBusArrivalsService = None
+        config_entries: list[ConfigEntry] = self._async_current_entries()
+        if config_entries:
+            coordinator: BusArrivalUpdateCoordinator = config_entries[0].runtime_data
+            service = coordinator.get_service()
+        else:
+            session: ClientSession = async_get_clientsession(self.hass)
+            service = SgBusArrivalsService(session, data[CONF_API_KEY])
+
+        try:
+            await service.authenticate()
+        except ConfigEntryAuthFailed:
+            errors["base"] = "invalid_auth"
+
+        return errors
 
     async def async_step_reauth(
         self, entry_data: Mapping[str, Any]

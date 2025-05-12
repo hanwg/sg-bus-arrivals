@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+from aiohttp import ClientSession
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_API_KEY, CONF_SCAN_INTERVAL, Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import SgBusArrivalsService
 from .coordinator import BusArrivalUpdateCoordinator, SgBusArrivalsConfigEntry
@@ -18,7 +21,8 @@ async def async_setup_entry(
     """Set up SG Bus Arrivals from a config entry."""
 
     # create instance of our api
-    service: SgBusArrivalsService = SgBusArrivalsService(entry.data[CONF_API_KEY])
+    session: ClientSession = async_get_clientsession(hass)
+    service: SgBusArrivalsService = SgBusArrivalsService(session, entry.data[CONF_API_KEY])
     coordinator: BusArrivalUpdateCoordinator = BusArrivalUpdateCoordinator(
         hass, entry, service, entry.data[CONF_SCAN_INTERVAL]
     )

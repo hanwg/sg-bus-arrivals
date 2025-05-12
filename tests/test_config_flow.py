@@ -32,15 +32,3 @@ async def test_user_flow_fail_authenticate(
 
     assert mock.called
     assert result["errors"] == {"base": "invalid_auth"}
-
-
-async def test_user_flow_fail_scan_interval(hass: HomeAssistant) -> None:
-    """Test user flow - authentication failed."""
-
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN,
-        context={"source": SOURCE_USER},
-        data={CONF_API_KEY: "invalid_key", CONF_SCAN_INTERVAL: -1},
-    )
-
-    assert result["errors"] == {"base": "invalid_scan_interval"}

@@ -6,7 +6,6 @@ from typing import Any
 
 import aiohttp
 
-from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 
 from . import const
@@ -19,22 +18,20 @@ _LOGGER = logging.getLogger(__name__)
 class SgBusArrivalsService:
     """Service for handling API calls."""
 
-    def __init__(self, _account_key: str) -> None:
+    def __init__(self, session: aiohttp.ClientSession, account_key: str) -> None:
         """Initialize with the given account key."""
 
-        self._account_key = _account_key
+        self._session = session
+        self._account_key = account_key
         self._is_authenticated = False
 
     async def _get_request(self, endpoint: str, page: int = 1) -> Any:
         """Invoke API."""
 
-        async with (
-            aiohttp.ClientSession() as session,
-            session.get(
-                const.API_BASE_URL + endpoint,
-                headers={"AccountKey": self._account_key},
-            ) as response,
-        ):
+        async with self._session.get(
+            const.API_BASE_URL + endpoint,
+            headers={"AccountKey": self._account_key},
+        ) as response:
             _LOGGER.debug(
                 "Invoking api, endpoint: %s, status: %s", endpoint, response.status
             )

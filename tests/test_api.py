@@ -14,9 +14,9 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 
 
 @pytest.fixture
-def service() -> SgBusArrivalsService:
+def service(mock_session: MagicMock) -> SgBusArrivalsService:
     """Fixture for SgBusArrivalsService."""
-    return SgBusArrivalsService("test_api_key")
+    return SgBusArrivalsService(mock_session, "test_api_key")
 
 
 @pytest.fixture
@@ -129,7 +129,7 @@ async def test_get_bus_arrivals(
 ) -> None:
     """Test get bus arrivals."""
 
-    json: str = await load_file("tests/fixtures/bus_arrival.json")
+    json: str =  await load_file("tests/fixtures/bus_arrival.json")
 
     mock_response = AsyncMock()
     mock_response.status = 200

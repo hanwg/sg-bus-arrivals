@@ -2,7 +2,6 @@
     "config": {
         "error": {
             "invalid_auth": "Authentication failed",
-            "invalid_scan_interval": "Scan interval must be at least 20 seconds",
             "unknown": "Unexpected error"
         },
         "initiate_flow": {
