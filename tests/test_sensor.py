@@ -2,7 +2,7 @@
 
 from unittest.mock import MagicMock
 
-from custom_components.sg_bus_arrivals.model.bus_arrival import BusArrival
+from custom_components.sg_bus_arrivals.models import BusArrival
 from custom_components.sg_bus_arrivals.sensor import BusArrivalSensor
 
 

@@ -13,7 +13,7 @@ from homeassistant.config_entries import (
 
 from .const import SUBENTRY_BUS_STOP_CODE, SUBENTRY_LABEL, SUBENTRY_SERVICE_NO
 from .coordinator import SgBusArrivalsConfigEntry
-from .model.bus_stop import BusStop
+from .models import BusStop
 from .sg_bus_arrivals_service import SgBusArrivalsService
 
 _LOGGER = logging.getLogger(__name__)

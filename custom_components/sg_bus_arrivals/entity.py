@@ -8,7 +8,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from . import SgBusArrivalsConfigEntry
 from .const import RUNTIME_DATA_COORDINATOR
 from .coordinator import BusArrivalUpdateCoordinator
-from .model.bus_arrival import BusArrival
+from .models import BusArrival
 
 
 class BusArrivalEntity(CoordinatorEntity[BusArrivalUpdateCoordinator]):

@@ -11,7 +11,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import SUBENTRY_BUS_STOP_CODE
-from .model.bus_arrival import BusArrival
+from .models import BusArrival
 from .sg_bus_arrivals_service import ApiError, SgBusArrivalsService
 
 _LOGGER = logging.getLogger(__name__)

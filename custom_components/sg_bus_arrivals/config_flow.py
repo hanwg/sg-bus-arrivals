@@ -19,9 +19,9 @@ from homeassistant.const import CONF_API_KEY, CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed
 
-from .bus_service_subentry_flow import BusServiceSubEntryFlowHandler
 from .const import DOMAIN, MIN_SCAN_INTERVAL_SECONDS, SUBENTRY_TYPE
 from .sg_bus_arrivals_service import SgBusArrivalsService
+from .subentry_flow import BusServiceSubEntryFlowHandler
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ async def validate_api(
     return errors
 
 
-class ConfigFlow(ConfigFlow, domain=DOMAIN):
+class SgBusArrivalsConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for SG Bus Arrivals."""
 
     VERSION = 1

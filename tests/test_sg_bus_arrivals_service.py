@@ -6,14 +6,13 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import aiofiles
 from anyio import Path
-from custom_components.sg_bus_arrivals.model.bus_stop import BusStop
+from custom_components.sg_bus_arrivals.models import BusArrival, BusStop
 from custom_components.sg_bus_arrivals.sg_bus_arrivals_service import (
     ApiError,
     SgBusArrivalsService,
 )
 import pytest
 
-from config.custom_components.sg_bus_arrivals.model.bus_arrival import BusArrival
 from homeassistant.exceptions import ConfigEntryAuthFailed
 
 

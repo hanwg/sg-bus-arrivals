@@ -16,7 +16,7 @@ from .const import (
 )
 from .coordinator import BusArrivalUpdateCoordinator
 from .entity import BusArrivalEntity
-from .model.bus_arrival import BusArrival
+from .models import BusArrival
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -93,9 +93,7 @@ class BusArrivalSensor(BusArrivalEntity, SensorEntity):
     @property
     def native_value(self) -> int:
         """Return the state of the entity."""
-        bus_arrival: BusArrival = self._get_data(
-            self._bus_stop_code, self._service_no
-        )
+        bus_arrival: BusArrival = self._get_data(self._bus_stop_code, self._service_no)
         _LOGGER.debug(
             "Update sensor, bus_stop_code: %s, service_no: %s, arrivals: %s",
             self._bus_stop_code,

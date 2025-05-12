@@ -10,10 +10,9 @@ from custom_components.sg_bus_arrivals.const import (
     SUBENTRY_SERVICE_NO,
     SUBENTRY_TYPE,
 )
+from custom_components.sg_bus_arrivals.models import BusArrival, BusStop
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from config.custom_components.sg_bus_arrivals.model.bus_arrival import BusArrival
-from config.custom_components.sg_bus_arrivals.model.bus_stop import BusStop
 from homeassistant.config_entries import SOURCE_USER, ConfigSubentryData
 from homeassistant.const import CONF_API_KEY, CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant
@@ -37,7 +36,10 @@ async def test_async_step_init(
     config_entry = MockConfigEntry(
         domain=DOMAIN,
         unique_id="test_api",
-        data={CONF_API_KEY: "dummy account key", CONF_SCAN_INTERVAL: MIN_SCAN_INTERVAL_SECONDS},
+        data={
+            CONF_API_KEY: "dummy account key",
+            CONF_SCAN_INTERVAL: MIN_SCAN_INTERVAL_SECONDS,
+        },
     )
 
     config_entry.add_to_hass(hass)
@@ -83,7 +85,10 @@ async def test_async_step_init_fail(
     config_entry = MockConfigEntry(
         domain=DOMAIN,
         unique_id="test_api",
-        data={CONF_API_KEY: "dummy account key", CONF_SCAN_INTERVAL: MIN_SCAN_INTERVAL_SECONDS},
+        data={
+            CONF_API_KEY: "dummy account key",
+            CONF_SCAN_INTERVAL: MIN_SCAN_INTERVAL_SECONDS,
+        },
     )
 
     config_entry.add_to_hass(hass)
@@ -131,7 +136,10 @@ async def test_async_step_init_duplicate(
     config_entry = MockConfigEntry(
         domain=DOMAIN,
         unique_id="test_api",
-        data={CONF_API_KEY: "mock account key", CONF_SCAN_INTERVAL: MIN_SCAN_INTERVAL_SECONDS},
+        data={
+            CONF_API_KEY: "mock account key",
+            CONF_SCAN_INTERVAL: MIN_SCAN_INTERVAL_SECONDS,
+        },
         subentries_data=[
             ConfigSubentryData(
                 data={

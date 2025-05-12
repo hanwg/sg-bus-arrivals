@@ -9,8 +9,7 @@ import aiohttp
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 
 from . import const
-from .model.bus_arrival import BusArrival
-from .model.bus_stop import BusStop
+from .models import BusArrival, BusStop
 
 _LOGGER = logging.getLogger(__name__)
 
