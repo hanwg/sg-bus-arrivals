@@ -12,7 +12,7 @@ async def test_get_data_not_found() -> None:
     service_no: str = "mock_service_no"
     bus_arrivals: dict[str, BusArrival] = {bus_stop_code: {}}
 
-    entity = BusArrivalSensor(MagicMock(), "mock label", bus_stop_code, service_no)
+    entity = BusArrivalSensor(MagicMock(), MagicMock(), bus_stop_code, "mock description", service_no)
 
     result = entity._get_data(bus_arrivals, service_no)  # noqa: SLF001
 

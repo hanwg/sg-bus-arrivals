@@ -6,8 +6,6 @@ from typing import Any
 
 import aiohttp
 
-from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
-
 from . import const
 from .models import BusArrival, BusStop
 
@@ -39,9 +37,9 @@ class SgBusArrivalsService:
                 return await response.json()
 
             if response.status == 401:
-                raise ConfigEntryAuthFailed
+                raise ApiAuthenticationError
 
-            raise ApiError(response.status)
+            raise ApiGeneralError(response.status)
 
     async def authenticate(self) -> bool:
         """Verify the account key by making an API call."""
@@ -129,10 +127,18 @@ class SgBusArrivalsService:
         return int(minutes)  # rounded down
 
 
-class ApiError(HomeAssistantError):
+class ApiGeneralError(Exception):
     """Error to indicate api failed."""
 
-    def __init__(self, status: int) -> None:
+    def __init__(self, http_status: int) -> None:
         """Initialize with the given status code."""
-        super().__init__(f"LTA DataMall API call failed with status code {status}")
-        self.status = status
+        super().__init__(f"LTA DataMall API call failed with status code {http_status}")
+        self.http_status = http_status
+
+
+class ApiAuthenticationError(Exception):
+    """Error to indicate api authentication failed."""
+
+    def __init__(self) -> None:
+        """Initialize with the given status code."""
+        super().__init__("Authentication failed. Please check your API account key.")

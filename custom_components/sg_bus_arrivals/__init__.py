@@ -7,9 +7,10 @@ from aiohttp import ClientSession
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_API_KEY, CONF_SCAN_INTERVAL, Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .api import SgBusArrivalsService
+from .api import ApiAuthenticationError, SgBusArrivalsService
 from .const import DOMAIN, SERVICE_REFRESH_BUS_ARRIVALS
 from .coordinator import BusArrivalUpdateCoordinator, SgBusArrivalsConfigEntry
 
@@ -28,7 +29,10 @@ async def async_setup_entry(
         hass, entry, service, entry.data[CONF_SCAN_INTERVAL]
     )
 
-    await service.authenticate()
+    try:
+        await service.authenticate()
+    except ApiAuthenticationError as e:
+        raise ConfigEntryAuthFailed from e
 
     # store reference to our api so that sensor entites can use it
     entry.runtime_data = coordinator

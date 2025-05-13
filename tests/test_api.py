@@ -6,11 +6,13 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import aiofiles
 from anyio import Path
-from custom_components.sg_bus_arrivals.api import ApiError, SgBusArrivalsService
+from custom_components.sg_bus_arrivals.api import (
+    ApiAuthenticationError,
+    ApiGeneralError,
+    SgBusArrivalsService,
+)
 from custom_components.sg_bus_arrivals.models import BusArrival, BusStop
 import pytest
-
-from homeassistant.exceptions import ConfigEntryAuthFailed
 
 
 @pytest.fixture
@@ -52,7 +54,7 @@ async def test_authenticate_failed(
     mock_response.status = 401
     mock_session.get.return_value.__aenter__.return_value = mock_response
 
-    with pytest.raises(ConfigEntryAuthFailed):
+    with pytest.raises(ApiAuthenticationError):
         await service.authenticate()
 
     assert mock_session.get.called
@@ -67,7 +69,7 @@ async def test_authenticate_error(
     mock_response.status = 500
     mock_session.get.return_value.__aenter__.return_value = mock_response
 
-    with pytest.raises(ApiError):
+    with pytest.raises(ApiGeneralError):
         await service.authenticate()
 
     assert mock_session.get.called
@@ -129,7 +131,7 @@ async def test_get_bus_arrivals(
 ) -> None:
     """Test get bus arrivals."""
 
-    json: str =  await load_file("tests/fixtures/bus_arrival.json")
+    json: str = await load_file("tests/fixtures/bus_arrival.json")
 
     mock_response = AsyncMock()
     mock_response.status = 200
@@ -145,7 +147,7 @@ async def test_get_bus_arrivals(
 async def test_compute_arrival_minutes(service: SgBusArrivalsService) -> None:
     """Test compute arrival minutes."""
 
-    result: int = await service._compute_arrival_minutes("9999-12-31T12:00:00+08:00")  # noqa: SLF001
+    result: int = service._compute_arrival_minutes("9999-12-31T12:00:00+08:00")  # noqa: SLF001
 
     assert result > 0
 

@@ -3,15 +3,15 @@
 import asyncio
 from asyncio import timeout
 import collections
-from dataclasses import dataclass
 from datetime import timedelta
 import logging
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .api import ApiError, SgBusArrivalsService
+from .api import ApiAuthenticationError, ApiGeneralError, SgBusArrivalsService
 from .const import SUBENTRY_BUS_STOP_CODE
 from .models import BusArrival
 
@@ -85,5 +85,7 @@ class BusArrivalUpdateCoordinator(
                         ] = bus_arrival
                 _LOGGER.debug("coordinator updated data")
                 return all_bus_arrivals
-        except ApiError as err:
-            raise UpdateFailed(f"Error communicating with API: {err}") from err
+        except ApiAuthenticationError as err:
+            raise ConfigEntryAuthFailed from err
+        except ApiGeneralError as err:
+            raise UpdateFailed("Failed to fetch data with LTA DataMall API") from err
