@@ -180,11 +180,6 @@ class BusArrivalSensor(BusArrivalEntity, SensorEntity):
     def native_value(self) -> int:
         """Return the state of the entity."""
         bus_arrival: BusArrival = self._get_data(self._bus_stop_code, self._service_no)
-        _LOGGER.debug(
-            "Update sensor, bus_stop_code: %s, service_no: %s",
-            self._bus_stop_code,
-            self._service_no,
-        )
         return self.entity_description.value_fn(
             self.entity_description.cardinality, bus_arrival
         )

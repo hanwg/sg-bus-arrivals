@@ -14,11 +14,13 @@ from custom_components.sg_bus_arrivals.api import (
 from custom_components.sg_bus_arrivals.models import BusArrival, BusStop
 import pytest
 
+from homeassistant.core import HomeAssistant
+
 
 @pytest.fixture
-def service(mock_session: MagicMock) -> SgBusArrivalsService:
+def service(hass: HomeAssistant, mock_session: MagicMock) -> SgBusArrivalsService:
     """Fixture for SgBusArrivalsService."""
-    return SgBusArrivalsService(mock_session, "test_api_key")
+    return SgBusArrivalsService(hass, mock_session, "test_api_key")
 
 
 @pytest.fixture

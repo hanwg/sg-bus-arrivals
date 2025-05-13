@@ -6,6 +6,11 @@ from typing import Any
 import voluptuous as vol
 
 from homeassistant.config_entries import ConfigSubentryFlow, SubentryFlowResult
+from homeassistant.helpers.selector import (
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
+)
 
 from .api import SgBusArrivalsService
 from .const import (
@@ -21,10 +26,6 @@ _LOGGER = logging.getLogger(__name__)
 
 STEP_USER_DATA_SCHEMA: vol.Schema = vol.Schema(
     {vol.Required(SUBENTRY_BUS_STOP_CODE): str}
-)
-
-STEP_SERVICE_NO_DATA_SCHEMA: vol.Schema = vol.Schema(
-    {vol.Required(SUBENTRY_SERVICE_NO): str}
 )
 
 
@@ -56,9 +57,6 @@ class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
             errors["base"] = "invalid_bus_stop_code"
 
         return bus_stop
-
-    async def _get_bus_services(self, bus_stop_code: str):
-        service: SgBusArrivalsService = self._get_service()
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -103,9 +101,21 @@ class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
                 unique_id=f"{self.bus_stop_code}_{user_input[SUBENTRY_SERVICE_NO]}",
             )
 
+        service: SgBusArrivalsService = self._get_service()
+        bus_services: list[str] = await service.get_bus_services(self.bus_stop_code)
+
         return self.async_show_form(
             step_id="service_no",
-            data_schema=STEP_SERVICE_NO_DATA_SCHEMA,
+            data_schema=vol.Schema(
+                {
+                    vol.Required(SUBENTRY_SERVICE_NO): SelectSelector(
+                        SelectSelectorConfig(
+                            options=sorted(bus_services),
+                            mode=SelectSelectorMode.DROPDOWN,
+                        )
+                    )
+                }
+            ),
             description_placeholders={
                 SUBENTRY_ROAD_NAME: self.road_name,
                 SUBENTRY_DESCRIPTION: self.description,

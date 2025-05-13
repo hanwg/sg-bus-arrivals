@@ -1,10 +1,13 @@
 """Handle API calls to LTA DataMall for querying bus arrivals."""
 
+import asyncio
 from datetime import UTC, datetime
 import logging
 from typing import Any
 
 import aiohttp
+
+from homeassistant.core import HomeAssistant
 
 from . import const
 from .models import BusArrival, BusStop, NextBus
@@ -16,12 +19,14 @@ _LOGGER = logging.getLogger(__name__)
 class SgBusArrivalsService:
     """Service for handling API calls."""
 
-    def __init__(self, session: aiohttp.ClientSession, account_key: str) -> None:
+    def __init__(self, hass: HomeAssistant, session: aiohttp.ClientSession, account_key: str) -> None:
         """Initialize with the given account key."""
 
         self._session = session
         self._account_key = account_key
         self._is_authenticated = False
+        self._bus_routes = {}
+        self.task = hass.async_create_task(self._get_bus_routes(), "_get_bus_routes")
 
     async def _get_request(self, endpoint: str) -> Any:
         """Invoke API."""
@@ -80,18 +85,35 @@ class SgBusArrivalsService:
             bus_stop["Description"],
         )
 
+    async def _get_bus_routes(self):
+        """Get bus services."""
+
+        _LOGGER.info("_ge_bus_routes started")
+
+        bus_routes: dict[str, Any] = {}
+
+        page: int = 0
+        while True:
+            page = page + 1
+            response: Any = await self._get_request(f"/BusRoutes?page={page}")
+
+            if response["value"] == []:
+                self._bus_routes = bus_routes
+                _LOGGER.info("_get_bus_routes completed")
+                return
+
+            for bus_route in response["value"]:
+                if bus_route["BusStopCode"] not in bus_routes:
+                    bus_routes[bus_route["BusStopCode"]] = set()
+
+                bus_services: set[str] = bus_routes[bus_route["BusStopCode"]]
+                bus_services.add(bus_route["ServiceNo"])
+
     async def get_bus_services(self, bus_stop_code: str) -> list[str]:
         """Get bus services."""
 
-        response: Any = await self._get_request("/BusRoutes")
-
-        return [
-            bus_stop["ServiceNo"]
-            for bus_stop in filter(
-                lambda bus_stop: bus_stop["BusStopCode"] == bus_stop_code,
-                response["value"],
-            )
-        ]
+        await self.task
+        return self._bus_routes[bus_stop_code]
 
     async def get_bus_arrivals(self, bus_stop_code: str) -> list[BusArrival]:
         """Get bus arrivals."""

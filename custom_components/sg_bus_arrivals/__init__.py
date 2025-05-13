@@ -24,7 +24,7 @@ async def async_setup_entry(
 
     # create instance of our api
     session: ClientSession = async_get_clientsession(hass)
-    service: SgBusArrivalsService = SgBusArrivalsService(session, entry.data[CONF_API_KEY])
+    service: SgBusArrivalsService = SgBusArrivalsService(hass, session, entry.data[CONF_API_KEY])
     coordinator: BusArrivalUpdateCoordinator = BusArrivalUpdateCoordinator(
         hass, entry, service, entry.data[CONF_SCAN_INTERVAL]
     )

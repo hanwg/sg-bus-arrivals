@@ -122,7 +122,7 @@ class SgBusArrivalsConfigFlow(ConfigFlow, domain=DOMAIN):
             service = coordinator.get_service()
         else:
             session: ClientSession = async_get_clientsession(self.hass)
-            service = SgBusArrivalsService(session, data[CONF_API_KEY])
+            service = SgBusArrivalsService(self.hass, session, data[CONF_API_KEY])
 
         try:
             await service.authenticate()
