@@ -1,7 +1,8 @@
 {
     "services": {
         "refresh_bus_arrivals": {
-            "name": "Refresh bus arrivals"
+            "name": "Refresh bus arrivals",
+            "description": "Initiates a fetch from LTA DataMall and updates all SG Bus Arrivals sensors."
         }
     },
     "config": {
@@ -61,10 +62,19 @@
                     },
                     "data_description": {
                         "label": "Name of the sensor. This should include the bus stop name and bus service number.",
-                        "service_no": "Bus service number",
                         "bus_stop_code": "5-digit bus stop code from the bus stop sign"
                     },
                     "description": "Adds a new sensor for a bus service at a bus stop."
+                },
+                "service_no": {
+                    "title": "Add new bus arrival sensor",
+                    "description": "Bus stop: {description} ({road_name})",
+                    "data": {
+                        "service_no": "Bus service number"
+                    },
+                    "data_description": {
+                        "service_no": "Bus service number"
+                    }
                 }
             },
             "abort": {

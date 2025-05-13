@@ -16,7 +16,12 @@ from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from . import SgBusArrivalsConfigEntry
-from .const import DOMAIN, SUBENTRY_BUS_STOP_CODE, SUBENTRY_LABEL, SUBENTRY_SERVICE_NO
+from .const import (
+    DOMAIN,
+    SUBENTRY_BUS_STOP_CODE,
+    SUBENTRY_DESCRIPTION,
+    SUBENTRY_SERVICE_NO,
+)
 from .coordinator import BusArrivalUpdateCoordinator
 from .entity import BusArrivalEntity
 from .models import BusArrival
@@ -44,7 +49,7 @@ async def async_setup_entry(
                 subentry,
                 sensor_description,
                 subentry.data[SUBENTRY_BUS_STOP_CODE],
-                subentry.data[SUBENTRY_LABEL],
+                subentry.data[SUBENTRY_DESCRIPTION],
                 subentry.data[SUBENTRY_SERVICE_NO],
             )
             for sensor_description in SENSOR_DESCRIPTIONS
