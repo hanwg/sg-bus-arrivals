@@ -23,7 +23,7 @@ class SgBusArrivalsService:
         self._account_key = account_key
         self._is_authenticated = False
 
-    async def _get_request(self, endpoint: str, page: int = 1) -> Any:
+    async def _get_request(self, endpoint: str) -> Any:
         """Invoke API."""
 
         async with self._session.get(
@@ -53,18 +53,26 @@ class SgBusArrivalsService:
     async def get_bus_stop(self, bus_stop_code: str) -> BusStop:
         """Get bus stop information by bus stop code."""
 
-        response: Any = await self._get_request("/BusStops")
-        bus_stop: dict[str, str] = next(
-            (
-                bus_stop
-                for bus_stop in response["value"]
-                if bus_stop["BusStopCode"] == bus_stop_code
-            ),
-            None,
-        )
+        bus_stop: BusStop | None = None
+        page: int = 0
+        while bus_stop is None:
+            page = page + 1
 
-        if bus_stop is None:
-            return None
+            response: Any = await self._get_request(f"/BusStops?page={page}")
+
+            # no more results
+            if response["value"] == []:
+                return None
+
+            # filter by bus stop code
+            bus_stop = next(
+                (
+                    bus_stop
+                    for bus_stop in response["value"]
+                    if bus_stop["BusStopCode"] == bus_stop_code
+                ),
+                None,
+            )
 
         return BusStop(
             bus_stop["BusStopCode"],

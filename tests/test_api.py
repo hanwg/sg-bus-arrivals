@@ -113,7 +113,7 @@ async def test_get_bus_stop_not_found(
 ) -> None:
     """Test get bus stop."""
 
-    json: str = await load_file("tests/fixtures/bus_stops.json")
+    json: str = await load_file("tests/fixtures/bus_stops_empty.json")
 
     mock_response = AsyncMock()
     mock_response.status = 200
