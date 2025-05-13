@@ -2,7 +2,7 @@
     "services": {
         "refresh_bus_arrivals": {
             "name": "Refresh bus arrivals",
-            "description": "Initiates a fetch from LTA DataMall and updates all SG Bus Arrivals sensors."
+            "description": "Initiates a fetch using the LTA DataMall API and updates all SG Bus Arrivals sensors."
         }
     },
     "config": {

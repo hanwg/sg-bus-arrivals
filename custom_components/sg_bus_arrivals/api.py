@@ -1,6 +1,5 @@
 """Handle API calls to LTA DataMall for querying bus arrivals."""
 
-import asyncio
 from datetime import UTC, datetime
 import logging
 from typing import Any

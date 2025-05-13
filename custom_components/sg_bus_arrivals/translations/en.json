@@ -2,7 +2,7 @@
     "services": {
         "refresh_bus_arrivals": {
             "name": "Refresh bus arrivals",
-            "description": "Initiates a fetch from LTA DataMall and updates all SG Bus Arrivals sensors."
+            "description": "Initiates a fetch using the LTA DataMall API and updates all SG Bus Arrivals sensors."
         }
     },
     "config": {
@@ -50,11 +50,11 @@
     "config_subentries": {
         "bus_service": {
             "initiate_flow": {
-                "user": "Add new bus arrival sensor"
+                "user": "Add new bus service"
             },
             "step": {
                 "user": {
-                    "title": "Add new bus arrival sensor",
+                    "title": "Add new bus service",
                     "data": {
                         "label": "Label",
                         "bus_stop_code": "Bus stop code",
@@ -67,7 +67,7 @@
                     "description": "Adds a new sensor for a bus service at a bus stop."
                 },
                 "service_no": {
-                    "title": "Add new bus arrival sensor",
+                    "title": "Add new bus service",
                     "description": "Bus stop: {description} ({road_name})",
                     "data": {
                         "service_no": "Bus service number"
