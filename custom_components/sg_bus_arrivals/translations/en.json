@@ -1,4 +1,9 @@
 {
+    "services": {
+        "refresh_bus_arrivals": {
+            "name": "Refresh bus arrivals"
+        }
+    },
     "config": {
         "error": {
             "invalid_auth": "Authentication failed",

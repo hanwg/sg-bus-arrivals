@@ -1,4 +1,9 @@
 {
+    "services":{
+        "refresh_bus_arrivals": {
+            "service": "mdi:refresh"
+        }
+    },
     "entity": {
         "sensor": {
             "next_bus_1_bus_type": {
