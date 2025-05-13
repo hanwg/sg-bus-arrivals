@@ -130,7 +130,7 @@ async def test_async_step_init_duplicate(
     service_no: str = "456"
 
     mock_get_bus_arrivals.return_value = [
-        BusArrival(bus_stop_code, service_no, None, None, None)
+        BusArrival(bus_stop_code, service_no, [])
     ]
 
     config_entry = MockConfigEntry(

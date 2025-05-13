@@ -142,21 +142,18 @@
             },
             "next_bus_1_feature": {
                 "name": "Feature",
-                "default": "Normal",
                 "state": {
                     "wab": "Wheel-chair accessible"
                 }
             },
             "next_bus_2_feature": {
                 "name": "Feature",
-                "default": "Normal",
                 "state": {
                     "wab": "Wheel-chair accessible"
                 }
             },
             "next_bus_3_feature": {
                 "name": "Feature",
-                "default": "Normal",
                 "state": {
                     "wab": "Wheel-chair accessible"
                 }

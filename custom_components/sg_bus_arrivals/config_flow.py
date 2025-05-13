@@ -20,6 +20,11 @@ from homeassistant.const import CONF_API_KEY, CONF_SCAN_INTERVAL
 from homeassistant.core import callback
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.selector import (
+    TextSelector,
+    TextSelectorConfig,
+    TextSelectorType,
+)
 
 from .api import SgBusArrivalsService
 from .const import DOMAIN, MIN_SCAN_INTERVAL_SECONDS, SUBENTRY_TYPE
@@ -35,7 +40,11 @@ def get_data_schema(
     """Return the schema for the config flow."""
     return vol.Schema(
         {
-            vol.Required(CONF_API_KEY, default=api_key): str,
+            vol.Required(CONF_API_KEY, default=api_key): TextSelector(
+                TextSelectorConfig(
+                    type=TextSelectorType.PASSWORD, autocomplete="current-password"
+                )
+            ),
             vol.Required(CONF_SCAN_INTERVAL, default=scan_interval): vol.All(
                 vol.Coerce(int), vol.Range(min=MIN_SCAN_INTERVAL_SECONDS)
             ),
@@ -136,6 +145,15 @@ class SgBusArrivalsConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input is None:
             return self.async_show_form(
                 step_id="reauth_confirm",
-                data_schema=vol.Schema({vol.Required(CONF_API_KEY): str}),
+                data_schema=vol.Schema(
+                    {
+                        vol.Required(CONF_API_KEY): TextSelector(
+                            TextSelectorConfig(
+                                type=TextSelectorType.PASSWORD,
+                                autocomplete="current-password",
+                            )
+                        )
+                    }
+                ),
             )
         return await self.async_step_user()
