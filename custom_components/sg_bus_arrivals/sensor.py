@@ -10,11 +10,13 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
 )
 from homeassistant.components.sensor.const import SensorStateClass, UnitOfTime
+from homeassistant.config_entries import ConfigSubentry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from . import SgBusArrivalsConfigEntry
-from .const import SUBENTRY_BUS_STOP_CODE, SUBENTRY_LABEL, SUBENTRY_SERVICE_NO
+from .const import DOMAIN, SUBENTRY_BUS_STOP_CODE, SUBENTRY_LABEL, SUBENTRY_SERVICE_NO
 from .coordinator import BusArrivalUpdateCoordinator
 from .entity import BusArrivalEntity
 from .models import BusArrival
@@ -39,6 +41,7 @@ async def async_setup_entry(
         sensors: list[BusArrivalSensor] = [
             BusArrivalSensor(
                 config_entry,
+                subentry,
                 sensor_description,
                 subentry.data[SUBENTRY_BUS_STOP_CODE],
                 subentry.data[SUBENTRY_LABEL],
@@ -60,39 +63,45 @@ PARALLEL_UPDATES = 0
 class SgBusArrivalsSensorDescription(SensorEntityDescription):
     """Describes the bus arrival sensor entity."""
 
+    cardinality: int
     icon: str
-    value_fn: Callable[[BusArrival], int | None]
+    value_fn: Callable[[int, BusArrival], int | None]
 
 
-SENSOR_DESCRIPTIONS: tuple[SgBusArrivalsSensorDescription] = (
-    SgBusArrivalsSensorDescription(
-        key="1st_arrival",
-        native_unit_of_measurement=UnitOfTime.MINUTES,
-        device_class=SensorDeviceClass.DURATION,
-        state_class=SensorStateClass.MEASUREMENT,
-        icon="mdi:numeric-1-circle",
-        value_fn=lambda bus_arrival: bus_arrival.next_bus_minutes,
-        translation_key="1st_arrival"
-    ),
-    SgBusArrivalsSensorDescription(
-        key="2nd_arrival",
-        native_unit_of_measurement=UnitOfTime.MINUTES,
-        device_class=SensorDeviceClass.DURATION,
-        state_class=SensorStateClass.MEASUREMENT,
-        icon="mdi:numeric-2-circle",
-        value_fn=lambda bus_arrival: bus_arrival.next_bus_minutes_2,
-        translation_key="2nd_arrival"
-    ),
-    SgBusArrivalsSensorDescription(
-        key="3rd_arrival",
-        native_unit_of_measurement=UnitOfTime.MINUTES,
-        device_class=SensorDeviceClass.DURATION,
-        state_class=SensorStateClass.MEASUREMENT,
-        icon="mdi:numeric-3-circle",
-        value_fn=lambda bus_arrival: bus_arrival.next_bus_minutes_3,
-        translation_key="3rd_arrival"
-    ),
-)
+def _get_sensor_descriotions() -> list[SgBusArrivalsSensorDescription]:
+    sensor_descriptions = []
+    for i in range(1, 4):
+        sensor_descriptions.append(
+            SgBusArrivalsSensorDescription(
+                cardinality=i,
+                key=f"next_bus_{i}_estimated_arrival",
+                native_unit_of_measurement=UnitOfTime.MINUTES,
+                device_class=SensorDeviceClass.DURATION,
+                state_class=SensorStateClass.MEASUREMENT,
+                icon="mdi:bus-clock",
+                value_fn=lambda cardinality, bus_arrival: bus_arrival.next_bus[
+                    cardinality - 1
+                ].estimated_arrival_minutes,
+                translation_key=f"next_bus_{i}_estimated_arrival",
+            )
+        )
+
+        sensor_descriptions.append(
+            SgBusArrivalsSensorDescription(
+                cardinality=i,
+                key=f"next_bus_{i}_bus_type",
+                device_class=SensorDeviceClass.ENUM,
+                value_fn=lambda cardinality, bus_arrival: bus_arrival.next_bus[
+                    cardinality - 1
+                ].bus_type,
+                translation_key=f"next_bus_{i}_bus_type",
+            )
+        )
+
+    return sensor_descriptions
+
+
+SENSOR_DESCRIPTIONS: list[SgBusArrivalsSensorDescription] = _get_sensor_descriotions()
 
 
 class BusArrivalSensor(BusArrivalEntity, SensorEntity):
@@ -103,6 +112,7 @@ class BusArrivalSensor(BusArrivalEntity, SensorEntity):
     def __init__(
         self,
         config_entry: SgBusArrivalsConfigEntry,
+        subentry: ConfigSubentry,
         entity_description: SgBusArrivalsSensorDescription,
         bus_stop_code: str,
         description: str,
@@ -112,28 +122,29 @@ class BusArrivalSensor(BusArrivalEntity, SensorEntity):
         super().__init__(config_entry)
         self.entity_description = entity_description
 
-        self.translation_placeholders = {
-            "bus_stop_code": bus_stop_code,
-            "service_no": service_no,
-            "description": description
-        }
-
         self._attr_unique_id = f"{bus_stop_code}_{service_no}_{entity_description.key}"
         self.entity_id = f"sensor.sgbusarrivals_{self._attr_unique_id}"
-        self.icon = entity_description.icon
         self._bus_stop_code = bus_stop_code
         self._service_no = service_no
+
+        self._attr_device_info = DeviceInfo(
+            entry_type=DeviceEntryType.SERVICE,
+            translation_key=f"next_bus_{entity_description.cardinality}",
+            translation_placeholders={
+                "service_no": service_no,
+                "description": description,
+            },
+            identifiers={
+                (DOMAIN, subentry.subentry_id, entity_description.cardinality)
+            },
+        )
 
     def _get_data(self, bus_stop_code: str, service_no: str) -> BusArrival:
         if service_no in self.coordinator.data[bus_stop_code]:
             return self.coordinator.data[bus_stop_code][service_no]
 
         return BusArrival(
-            bus_stop_code=bus_stop_code,
-            service_no=service_no,
-            next_bus_minutes=None,
-            next_bus_minutes_2=None,
-            next_bus_minutes_3=None,
+            bus_stop_code=bus_stop_code, service_no=service_no, next_bus=[]
         )
 
     @property
@@ -141,9 +152,10 @@ class BusArrivalSensor(BusArrivalEntity, SensorEntity):
         """Return the state of the entity."""
         bus_arrival: BusArrival = self._get_data(self._bus_stop_code, self._service_no)
         _LOGGER.debug(
-            "Update sensor, bus_stop_code: %s, service_no: %s, arrivals: %s",
+            "Update sensor, bus_stop_code: %s, service_no: %s",
             self._bus_stop_code,
             self._service_no,
-            f"{bus_arrival.next_bus_minutes}/{bus_arrival.next_bus_minutes_2}/{bus_arrival.next_bus_minutes_3}",
         )
-        return self.entity_description.value_fn(bus_arrival)
+        return self.entity_description.value_fn(
+            self.entity_description.cardinality, bus_arrival
+        )

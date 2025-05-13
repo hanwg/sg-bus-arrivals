@@ -1,0 +1,30 @@
+{
+    "entity": {
+        "sensor": {
+            "next_bus_1_bus_type": {
+                "name": "Bus type",
+                "state": {
+                    "SD": "mdi:bus-side",
+                    "DD": "mdi:bus-double-decker",
+                    "BD": "mdi:bus-side"
+                }
+            },
+            "next_bus_2_bus_type": {
+                "name": "Bus type",
+                "state": {
+                    "SD": "mdi:bus-side",
+                    "DD": "mdi:bus-double-decker",
+                    "BD": "mdi:bus-side"
+                }
+            },
+            "next_bus_3_bus_type": {
+                "name": "Bus type",
+                "state": {
+                    "SD": "mdi:bus-side",
+                    "DD": "mdi:bus-double-decker",
+                    "BD": "mdi:bus-side"
+                }
+            }
+        }
+    }
+}

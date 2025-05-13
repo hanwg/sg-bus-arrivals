@@ -86,6 +86,6 @@ class BusArrivalUpdateCoordinator(
                 _LOGGER.debug("coordinator updated data")
                 return all_bus_arrivals
         except ApiAuthenticationError as err:
-            raise ConfigEntryAuthFailed from err
+            raise ConfigEntryAuthFailed(err.m) from err
         except ApiGeneralError as err:
             raise UpdateFailed("Failed to fetch data with LTA DataMall API") from err

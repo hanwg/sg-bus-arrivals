@@ -7,7 +7,7 @@ from typing import Any
 import aiohttp
 
 from . import const
-from .models import BusArrival, BusStop
+from .models import BusArrival, BusStop, NextBus
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -96,15 +96,26 @@ class SgBusArrivalsService:
             BusArrival(
                 response["BusStopCode"],
                 bus_arrival["ServiceNo"],
-                self._compute_arrival_minutes(
-                    bus_arrival["NextBus"]["EstimatedArrival"]
-                ),
-                self._compute_arrival_minutes(
-                    bus_arrival["NextBus2"]["EstimatedArrival"]
-                ),
-                self._compute_arrival_minutes(
-                    bus_arrival["NextBus3"]["EstimatedArrival"]
-                ),
+                [
+                    NextBus(
+                        self._compute_arrival_minutes(
+                            bus_arrival["NextBus"]["EstimatedArrival"]
+                        ),
+                        bus_arrival["NextBus"]["Type"],
+                    ),
+                    NextBus(
+                        self._compute_arrival_minutes(
+                            bus_arrival["NextBus2"]["EstimatedArrival"]
+                        ),
+                        bus_arrival["NextBus2"]["Type"],
+                    ),
+                    NextBus(
+                        self._compute_arrival_minutes(
+                            bus_arrival["NextBus3"]["EstimatedArrival"]
+                        ),
+                        bus_arrival["NextBus3"]["Type"],
+                    ),
+                ],
             )
             for bus_arrival in response["Services"]
         ]

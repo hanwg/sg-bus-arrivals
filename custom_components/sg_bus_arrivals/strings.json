@@ -21,17 +21,52 @@
       "reconfigure_successful": "[%key:common::config_flow::abort::reconfigure_successful%]"
     }
   },
+  "device":{
+      "next_bus_1": {
+          "name": "{service_no} @{description} (1st arrival)"
+      },
+      "next_bus_2": {
+          "name": "{service_no} @{description} (2nd arrival)"
+      },
+      "next_bus_3": {
+          "name": "{service_no} @{description} (3rd arrival)"
+      }
+  },
   "entity": {
     "sensor": {
-      "1st_arrival": {
-                "name": "{service_no} @{description} (1st arrival)"
-            },
-            "2nd_arrival": {
-                "name": "{service_no} @{description} (2nd arrival)"
-            },
-            "3rd_arrival": {
-                "name": "{service_no} @{description} (3rd arrival)"
-            }
+      "next_bus_1_estimated_arrival": {
+          "name": "Estimated arrival"
+      },
+      "next_bus_2_estimated_arrival": {
+          "name": "Estimated arrival"
+      },
+      "next_bus_3_estimated_arrival": {
+          "name": "Estimated arrival"
+      },
+      "next_bus_1_bus_type": {
+          "name": "Bus type",
+          "state": {
+            "SD": "Single Deck",
+            "DD": "Double Deck",
+            "BD": "Bendy"
+          }
+      },
+      "next_bus_2_bus_type": {
+          "name": "Bus type",
+          "state": {
+            "SD": "Single Deck",
+            "DD": "Double Deck",
+            "BD": "Bendy"
+          }
+      },
+      "next_bus_3_bus_type": {
+          "name": "Bus type",
+          "state": {
+            "SD": "Single Deck",
+            "DD": "Double Deck",
+            "BD": "Bendy"
+          }
+      }
     }
   }
 }

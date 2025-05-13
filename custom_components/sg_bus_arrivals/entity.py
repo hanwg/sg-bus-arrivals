@@ -3,11 +3,9 @@
 from collections.abc import Mapping
 from typing import Any
 
-from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import SgBusArrivalsConfigEntry
-from .const import DOMAIN
 from .coordinator import BusArrivalUpdateCoordinator
 from .models import BusArrival
 
@@ -32,9 +30,3 @@ class BusArrivalEntity(CoordinatorEntity[BusArrivalUpdateCoordinator]):
         attrs["bus_stop_code"] = bus_arrival.bus_stop_code
         attrs["service_no"] = bus_arrival.service_no
         return attrs
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        """Return service info."""
-
-        return DeviceInfo(entry_type=DeviceEntryType.SERVICE, identifiers={(DOMAIN, self._entry.entry_id)})
