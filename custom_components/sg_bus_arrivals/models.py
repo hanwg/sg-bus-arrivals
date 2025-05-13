@@ -9,6 +9,8 @@ class NextBus:
 
     estimated_arrival_minutes: int
     bus_type: str
+    feature: str
+    load: str
 
 
 @dataclass

@@ -98,6 +98,30 @@ def _get_sensor_descriotions() -> list[SgBusArrivalsSensorDescription]:
             )
         )
 
+        sensor_descriptions.append(
+            SgBusArrivalsSensorDescription(
+                cardinality=i,
+                key=f"next_bus_{i}_feature",
+                device_class=SensorDeviceClass.ENUM,
+                value_fn=lambda cardinality, bus_arrival: bus_arrival.next_bus[
+                    cardinality - 1
+                ].feature,
+                translation_key=f"next_bus_{i}_feature",
+            )
+        )
+
+        sensor_descriptions.append(
+            SgBusArrivalsSensorDescription(
+                cardinality=i,
+                key=f"next_bus_{i}_load",
+                device_class=SensorDeviceClass.ENUM,
+                value_fn=lambda cardinality, bus_arrival: bus_arrival.next_bus[
+                    cardinality - 1
+                ].load,
+                translation_key=f"next_bus_{i}_load",
+            )
+        )
+
     return sensor_descriptions
 
 

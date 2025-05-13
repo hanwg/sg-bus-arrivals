@@ -101,19 +101,25 @@ class SgBusArrivalsService:
                         self._compute_arrival_minutes(
                             bus_arrival["NextBus"]["EstimatedArrival"]
                         ),
-                        bus_arrival["NextBus"]["Type"],
+                        bus_arrival["NextBus"]["Type"].lower(),
+                        bus_arrival["NextBus"]["Feature"].lower(),
+                        bus_arrival["NextBus"]["Load"].lower(),
                     ),
                     NextBus(
                         self._compute_arrival_minutes(
                             bus_arrival["NextBus2"]["EstimatedArrival"]
                         ),
-                        bus_arrival["NextBus2"]["Type"],
+                        bus_arrival["NextBus2"]["Type"].lower(),
+                        bus_arrival["NextBus2"]["Feature"].lower(),
+                        bus_arrival["NextBus2"]["Load"].lower(),
                     ),
                     NextBus(
                         self._compute_arrival_minutes(
                             bus_arrival["NextBus3"]["EstimatedArrival"]
                         ),
-                        bus_arrival["NextBus3"]["Type"],
+                        bus_arrival["NextBus3"]["Type"].lower(),
+                        bus_arrival["NextBus3"]["Feature"].lower(),
+                        bus_arrival["NextBus3"]["Load"].lower(),
                     ),
                 ],
             )
