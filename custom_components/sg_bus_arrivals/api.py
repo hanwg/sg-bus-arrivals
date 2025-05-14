@@ -23,7 +23,6 @@ class SgBusArrivalsService:
 
         self._session = session
         self._account_key = account_key
-        self._is_authenticated = False
         self._bus_routes = {}
         self.task = hass.async_create_task(self._get_bus_routes(), "_get_bus_routes")
 
@@ -48,9 +47,7 @@ class SgBusArrivalsService:
     async def authenticate(self) -> bool:
         """Verify the account key by making an API call."""
 
-        if self._is_authenticated:
-            return True
-
+        # any random API call will work but this is the fastest and simplest
         await self._get_request("/BusServices")
         return True
 

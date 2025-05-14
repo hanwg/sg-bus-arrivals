@@ -89,7 +89,7 @@ class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
             for existing_subentry in config_entry.subentries.values():
                 if (
                     existing_subentry.unique_id
-                    == f"{user_input[SUBENTRY_BUS_STOP_CODE]}_{user_input[SUBENTRY_SERVICE_NO]}"
+                    == f"{self.bus_stop_code}_{user_input[SUBENTRY_SERVICE_NO]}"
                 ):
                     return self.async_abort(reason="already_configured")
 
