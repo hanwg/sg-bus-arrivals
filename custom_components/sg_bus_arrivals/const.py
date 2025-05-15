@@ -10,4 +10,6 @@ SUBENTRY_SERVICE_NO = "service_no"
 SUBENTRY_ROAD_NAME = "road_name"
 SUBENTRY_DESCRIPTION = "description"
 
+TASK_ALL_BUS_SERVICES = "all_bus_services"
+
 SERVICE_REFRESH_BUS_ARRIVALS = "refresh_bus_arrivals"

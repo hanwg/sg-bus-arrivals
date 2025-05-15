@@ -84,8 +84,8 @@ class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
     ) -> SubentryFlowResult:
         """Prompt user for bus service number."""
         errors: dict[str, str] = {}
+        config_entry: SgBusArrivalsConfigEntry = self._get_entry()
         if SUBENTRY_SERVICE_NO in user_input:
-            config_entry: SgBusArrivalsConfigEntry = self._get_entry()
             for existing_subentry in config_entry.subentries.values():
                 if (
                     existing_subentry.unique_id
@@ -101,8 +101,8 @@ class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
                 unique_id=f"{self.bus_stop_code}_{user_input[SUBENTRY_SERVICE_NO]}",
             )
 
-        service: SgBusArrivalsService = self._get_service()
-        bus_services: list[str] = await service.get_bus_services(self.bus_stop_code)
+        coordinator: BusArrivalUpdateCoordinator = config_entry.runtime_data
+        bus_services: list[str] = await coordinator.get_bus_services(self.bus_stop_code)
 
         return self.async_show_form(
             step_id="service_no",

@@ -1,7 +1,7 @@
 """Poll for bus arrival times."""
 
 import asyncio
-from asyncio import timeout
+from asyncio import Task, timeout
 import collections
 from datetime import timedelta
 import logging
@@ -12,7 +12,7 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import ApiAuthenticationError, ApiGeneralError, SgBusArrivalsService
-from .const import SUBENTRY_BUS_STOP_CODE
+from .const import SUBENTRY_BUS_STOP_CODE, TASK_ALL_BUS_SERVICES
 from .models import BusArrival
 
 _LOGGER = logging.getLogger(__name__)
@@ -46,6 +46,19 @@ class BusArrivalUpdateCoordinator(
             always_update=True,
         )
         self._service = service
+        self._all_bus_services = {}
+
+        async def _get_all_bus_services():
+            self._all_bus_services = await self._service.get_all_bus_services()
+
+        self._task: Task = hass.async_create_task(
+            _get_all_bus_services(), TASK_ALL_BUS_SERVICES
+        )
+
+    async def get_bus_services(self, bus_stop_code: str) -> set[str]:
+        """Fetch all bus services for the specified bus stop."""
+        await self._task
+        return self._all_bus_services[bus_stop_code]
 
     def get_service(self) -> SgBusArrivalsService:
         """Return the service instance."""

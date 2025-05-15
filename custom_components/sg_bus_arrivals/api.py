@@ -2,11 +2,10 @@
 
 from datetime import UTC, datetime
 import logging
+import time
 from typing import Any
 
 import aiohttp
-
-from homeassistant.core import HomeAssistant
 
 from . import const
 from .models import BusArrival, BusStop, NextBus
@@ -18,13 +17,11 @@ _LOGGER = logging.getLogger(__name__)
 class SgBusArrivalsService:
     """Service for handling API calls."""
 
-    def __init__(self, hass: HomeAssistant, session: aiohttp.ClientSession, account_key: str) -> None:
+    def __init__(self, session: aiohttp.ClientSession, account_key: str) -> None:
         """Initialize with the given account key."""
 
         self._session = session
         self._account_key = account_key
-        self._bus_routes = {}
-        self.task = hass.async_create_task(self._get_bus_routes(), "_get_bus_routes")
 
     async def _get_request(self, endpoint: str) -> Any:
         """Invoke API."""
@@ -44,12 +41,12 @@ class SgBusArrivalsService:
 
             raise ApiGeneralError(response.status)
 
-    async def authenticate(self) -> bool:
+    async def authenticate(self) -> None:
         """Verify the account key by making an API call."""
 
         # any random API call will work but this is the fastest and simplest
+        # ApiAuthenticationError is thrown if authentication fails
         await self._get_request("/BusServices")
-        return True
 
     async def get_bus_stop(self, bus_stop_code: str) -> BusStop:
         """Get bus stop information by bus stop code."""
@@ -81,12 +78,12 @@ class SgBusArrivalsService:
             bus_stop["Description"],
         )
 
-    async def _get_bus_routes(self):
+    async def get_all_bus_services(self) -> dict[str, set[str]]:
         """Get bus services."""
 
-        _LOGGER.info("_ge_bus_routes started")
+        start: float = time.time()
 
-        bus_routes: dict[str, Any] = {}
+        all_bus_services: dict[str, set[str]] = {}
 
         page: int = 0
         while True:
@@ -94,22 +91,26 @@ class SgBusArrivalsService:
             response: Any = await self._get_request(f"/BusRoutes?page={page}")
 
             if response["value"] == []:
-                self._bus_routes = bus_routes
-                _LOGGER.info("_get_bus_routes completed")
-                return
+                end: float = time.time()
+                seconds_elapsed: float = end - start
+                _LOGGER.info(
+                    "Get all bus services completed in %f seconds", seconds_elapsed
+                )
+                return all_bus_services
 
             for bus_route in response["value"]:
-                if bus_route["BusStopCode"] not in bus_routes:
-                    bus_routes[bus_route["BusStopCode"]] = set()
+                bus_stop_code: str = bus_route["BusStopCode"]
+                if bus_stop_code not in all_bus_services:
+                    all_bus_services[bus_stop_code] = set()
 
-                bus_services: set[str] = bus_routes[bus_route["BusStopCode"]]
+                bus_services: set[str] = all_bus_services[bus_stop_code]
                 bus_services.add(bus_route["ServiceNo"])
 
     async def get_bus_services(self, bus_stop_code: str) -> list[str]:
         """Get bus services."""
 
-        await self.task
-        return self._bus_routes[bus_stop_code]
+        all_bus_services: dict[str, set[str]] = await self.get_all_bus_services()
+        return all_bus_services[bus_stop_code]
 
     async def get_bus_arrivals(self, bus_stop_code: str) -> list[BusArrival]:
         """Get bus arrivals."""
@@ -125,28 +126,17 @@ class SgBusArrivalsService:
                 [
                     NextBus(
                         self._compute_arrival_minutes(
-                            bus_arrival["NextBus"]["EstimatedArrival"]
+                            bus_arrival[index]["EstimatedArrival"]
                         ),
-                        bus_arrival["NextBus"]["Type"].lower(),
-                        bus_arrival["NextBus"]["Feature"].lower(),
-                        bus_arrival["NextBus"]["Load"].lower(),
-                    ),
-                    NextBus(
-                        self._compute_arrival_minutes(
-                            bus_arrival["NextBus2"]["EstimatedArrival"]
-                        ),
-                        bus_arrival["NextBus2"]["Type"].lower(),
-                        bus_arrival["NextBus2"]["Feature"].lower(),
-                        bus_arrival["NextBus2"]["Load"].lower(),
-                    ),
-                    NextBus(
-                        self._compute_arrival_minutes(
-                            bus_arrival["NextBus3"]["EstimatedArrival"]
-                        ),
-                        bus_arrival["NextBus3"]["Type"].lower(),
-                        bus_arrival["NextBus3"]["Feature"].lower(),
-                        bus_arrival["NextBus3"]["Load"].lower(),
-                    ),
+                        bus_arrival[index]["Type"].lower(),
+                        bus_arrival[index]["Feature"].lower(),
+                        bus_arrival[index]["Load"].lower(),
+                    )
+                    for index in [
+                        "NextBus",
+                        "NextBus2",
+                        "NextBus3",
+                    ]  # api returns exactly 3 items
                 ],
             )
             for bus_arrival in response["Services"]
