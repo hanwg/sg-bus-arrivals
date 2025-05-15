@@ -14,13 +14,11 @@ from custom_components.sg_bus_arrivals.api import (
 from custom_components.sg_bus_arrivals.models import BusArrival, BusStop
 import pytest
 
-from homeassistant.core import HomeAssistant
-
 
 @pytest.fixture
-def service(hass: HomeAssistant, mock_session: MagicMock) -> SgBusArrivalsService:
+def service(mock_session: MagicMock) -> SgBusArrivalsService:
     """Fixture for SgBusArrivalsService."""
-    return SgBusArrivalsService(hass, mock_session, "test_api_key")
+    return SgBusArrivalsService(mock_session, "test_api_key")
 
 
 @pytest.fixture
@@ -41,10 +39,9 @@ async def test_authenticate_success(
     mock_response.status = 200
     mock_session.get.return_value.__aenter__.return_value = mock_response
 
-    result = await service.authenticate()
+    await service.authenticate()
 
     assert mock_session.get.called
-    assert result is True
 
 
 async def test_authenticate_failed(
@@ -75,18 +72,6 @@ async def test_authenticate_error(
         await service.authenticate()
 
     assert mock_session.get.called
-
-
-async def test_authenticate_already_authenticated(
-    service: SgBusArrivalsService,
-) -> None:
-    """Test authentication when already authenticated."""
-
-    service._is_authenticated = True  # noqa: SLF001
-
-    result = await service.authenticate()
-
-    assert result is True
 
 
 async def test_get_bus_stop(
