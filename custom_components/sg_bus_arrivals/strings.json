@@ -40,16 +40,10 @@
     },
     "entity": {
         "sensor": {
-            "next_bus_1_estimated_arrival": {
+            "next_bus_estimated_arrival": {
                 "name": "Estimated arrival"
             },
-            "next_bus_2_estimated_arrival": {
-                "name": "Estimated arrival"
-            },
-            "next_bus_3_estimated_arrival": {
-                "name": "Estimated arrival"
-            },
-            "next_bus_1_bus_type": {
+            "next_bus_bus_type": {
                 "name": "Bus type",
                 "state": {
                     "sd": "Single Deck",
@@ -57,23 +51,7 @@
                     "bd": "Bendy"
                 }
             },
-            "next_bus_2_bus_type": {
-                "name": "Bus type",
-                "state": {
-                    "sd": "Single Deck",
-                    "dd": "Double Deck",
-                    "bd": "Bendy"
-                }
-            },
-            "next_bus_3_bus_type": {
-                "name": "Bus type",
-                "state": {
-                    "sd": "Single Deck",
-                    "dd": "Double Deck",
-                    "bd": "Bendy"
-                }
-            },
-            "next_bus_1_load": {
+            "next_bus_load": {
                 "name": "Load",
                 "state": {
                     "sea": "Seats available",
@@ -81,35 +59,7 @@
                     "lsd": "Limited standing"
                 }
             },
-            "next_bus_2_load": {
-                "name": "Load",
-                "state": {
-                    "sea": "Seats available",
-                    "sda": "Standing available",
-                    "lsd": "Limited standing"
-                }
-            },
-            "next_bus_3_load": {
-                "name": "Load",
-                "state": {
-                    "sea": "Seats available",
-                    "sda": "Standing available",
-                    "lsd": "Limited standing"
-                }
-            },
-            "next_bus_1_feature": {
-                "name": "Feature",
-                "state": {
-                    "wab": "Wheel-chair accessible"
-                }
-            },
-            "next_bus_2_feature": {
-                "name": "Feature",
-                "state": {
-                    "wab": "Wheel-chair accessible"
-                }
-            },
-            "next_bus_3_feature": {
+            "next_bus_feature": {
                 "name": "Feature",
                 "state": {
                     "wab": "Wheel-chair accessible"

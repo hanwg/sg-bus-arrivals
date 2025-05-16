@@ -139,6 +139,22 @@ async def test_compute_arrival_minutes(service: SgBusArrivalsService) -> None:
     assert result > 0
 
 
+async def test_train_service_alerts(mock_session: MagicMock, service: SgBusArrivalsService) -> None:
+    "Test get train service alerts."
+
+    json: str = await load_file("tests/fixtures/train_service_alerts.json")
+
+    mock_response = AsyncMock()
+    mock_response.status = 200
+    mock_response.json.return_value = json
+    mock_session.get.return_value.__aenter__.return_value = mock_response
+
+    response: dict[str, list[str]] = await service.get_train_service_alerts()
+
+    assert mock_session.get.called
+    assert "NEL" in response["NEL"][0]
+
+
 async def load_file(filename: str) -> Any:
     """Load a file from the test data directory."""
 

@@ -5,20 +5,31 @@ from typing import Any
 
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from . import SgBusArrivalsConfigEntry
-from .coordinator import BusArrivalUpdateCoordinator
+from .coordinator import (
+    BusArrivalUpdateCoordinator,
+    TrainServiceAlertsUpdateCoordinator,
+)
 from .models import BusArrival
 
 
-class BusArrivalEntity(CoordinatorEntity[BusArrivalUpdateCoordinator]):
-    """Entity."""
+class TrainServiceAlertEntity(CoordinatorEntity[TrainServiceAlertsUpdateCoordinator]):
+    """Train service alert entity."""
 
     _attr_has_entity_name = True
 
-    def __init__(self, config_entry: SgBusArrivalsConfigEntry) -> None:
+    def __init__(self, coordinator: TrainServiceAlertsUpdateCoordinator) -> None:
         """Initialize."""
-        super().__init__(config_entry.runtime_data)
-        self._entry = config_entry
+        super().__init__(coordinator)
+
+
+class BusArrivalEntity(CoordinatorEntity[BusArrivalUpdateCoordinator]):
+    """Bus arrival entity."""
+
+    _attr_has_entity_name = True
+
+    def __init__(self, coordinator: BusArrivalUpdateCoordinator) -> None:
+        """Initialize."""
+        super().__init__(coordinator)
 
     @property
     def extra_state_attributes(self) -> Mapping[str, Any]:

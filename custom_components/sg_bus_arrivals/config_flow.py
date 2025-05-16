@@ -27,9 +27,17 @@ from homeassistant.helpers.selector import (
 )
 
 from .api import SgBusArrivalsService
-from .const import DOMAIN, MIN_SCAN_INTERVAL_SECONDS, SUBENTRY_TYPE
+from .const import (
+    DOMAIN,
+    MIN_SCAN_INTERVAL_SECONDS,
+    SUBENTRY_TYPE_BUS_SERVICE,
+    SUBENTRY_TYPE_TRAIN_SERVICE_ALERTS,
+)
 from .coordinator import BusArrivalUpdateCoordinator
-from .subentry_flow import BusServiceSubEntryFlowHandler
+from .subentry_flow import (
+    BusServiceSubEntryFlowHandler,
+    TrainServiceAlertsSubEntryFlowHandler,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -63,7 +71,10 @@ class SgBusArrivalsConfigFlow(ConfigFlow, domain=DOMAIN):
         cls, config_entry: ConfigEntry
     ) -> dict[str, type[ConfigSubentryFlow]]:
         """Return subentries supported by this integration."""
-        return {SUBENTRY_TYPE: BusServiceSubEntryFlowHandler}
+        return {
+            SUBENTRY_TYPE_BUS_SERVICE: BusServiceSubEntryFlowHandler,
+            SUBENTRY_TYPE_TRAIN_SERVICE_ALERTS: TrainServiceAlertsSubEntryFlowHandler,
+        }
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None

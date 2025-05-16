@@ -24,7 +24,9 @@ async def async_setup_entry(
 
     # create instance of our api
     session: ClientSession = async_get_clientsession(hass)
-    service: SgBusArrivalsService = SgBusArrivalsService(session, entry.data[CONF_API_KEY])
+    service: SgBusArrivalsService = SgBusArrivalsService(
+        session, entry.data[CONF_API_KEY]
+    )
     coordinator: BusArrivalUpdateCoordinator = BusArrivalUpdateCoordinator(
         hass, entry, service, entry.data[CONF_SCAN_INTERVAL]
     )
@@ -35,7 +37,7 @@ async def async_setup_entry(
         raise ConfigEntryAuthFailed from e
 
     # store reference to our api so that sensor entites can use it
-    entry.runtime_data = coordinator
+    entry.runtime_data = service
 
     # Registers update listener to update config entry when options are updated.
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
@@ -64,7 +66,9 @@ async def async_unload_entry(
 ) -> bool:
     """Unload services and config entry."""
 
-    isUnloaded: bool = await hass.config_entries.async_unload_platforms(entry, _PLATFORMS)
+    isUnloaded: bool = await hass.config_entries.async_unload_platforms(
+        entry, _PLATFORMS
+    )
 
     hass.services.async_remove(DOMAIN, SERVICE_REFRESH_BUS_ARRIVALS)
 

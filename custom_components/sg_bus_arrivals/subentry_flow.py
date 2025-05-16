@@ -18,6 +18,7 @@ from .const import (
     SUBENTRY_DESCRIPTION,
     SUBENTRY_ROAD_NAME,
     SUBENTRY_SERVICE_NO,
+    SUBENTRY_TYPE_TRAIN_SERVICE_ALERTS,
 )
 from .coordinator import BusArrivalUpdateCoordinator, SgBusArrivalsConfigEntry
 from .models import BusStop
@@ -29,17 +30,32 @@ STEP_USER_DATA_SCHEMA: vol.Schema = vol.Schema(
 )
 
 
+class TrainServiceAlertsSubEntryFlowHandler(ConfigSubentryFlow):
+    """Handles subentry flow for creating train service alerts."""
+
+    async def async_step_user(
+        self, user_input: dict[str, Any] | None = None
+    ) -> SubentryFlowResult:
+        """Create subentry."""
+        config_entry: SgBusArrivalsConfigEntry = self._get_entry()
+        if SUBENTRY_SERVICE_NO in user_input:
+            for existing_subentry in config_entry.subentries.values():
+                if existing_subentry.subentry_type == SUBENTRY_TYPE_TRAIN_SERVICE_ALERTS:
+                    return self.async_abort(reason="already_configured")
+
+        return self.async_create_entry(
+            title="Train Service Alerts",
+            data={},
+            unique_id=SUBENTRY_TYPE_TRAIN_SERVICE_ALERTS,
+        )
+
+
 class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
-    """Handles options flow for creating new bus stops."""
+    """Handles subentry flow for creating new bus stops."""
 
     bus_stop_code: str
     road_name: str
     description: str
-
-    def _get_service(self) -> SgBusArrivalsService:
-        config_entry: SgBusArrivalsConfigEntry = self._get_entry()
-        coordinator: BusArrivalUpdateCoordinator = config_entry.runtime_data
-        return coordinator.get_service()
 
     async def _validate_bus_stop(
         self,
@@ -50,7 +66,8 @@ class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
 
         Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
         """
-        service: SgBusArrivalsService = self._get_service()
+        config_entry: SgBusArrivalsConfigEntry = self._get_entry()
+        service: SgBusArrivalsService = config_entry.runtime_data
         bus_stop: BusStop = await service.get_bus_stop(data)
 
         if bus_stop is None:

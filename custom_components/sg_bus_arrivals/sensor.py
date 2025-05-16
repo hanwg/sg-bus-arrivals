@@ -11,19 +11,25 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.components.sensor.const import SensorStateClass, UnitOfTime
 from homeassistant.config_entries import ConfigSubentry
+from homeassistant.const import CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from . import SgBusArrivalsConfigEntry
+from .api import SgBusArrivalsService
 from .const import (
     DOMAIN,
     SUBENTRY_BUS_STOP_CODE,
     SUBENTRY_DESCRIPTION,
     SUBENTRY_SERVICE_NO,
+    SUBENTRY_TYPE_BUS_SERVICE,
 )
-from .coordinator import BusArrivalUpdateCoordinator
-from .entity import BusArrivalEntity
+from .coordinator import (
+    BusArrivalUpdateCoordinator,
+    TrainServiceAlertsUpdateCoordinator,
+)
+from .entity import BusArrivalEntity, TrainServiceAlertEntity
 from .models import BusArrival
 
 _LOGGER = logging.getLogger(__name__)
@@ -37,27 +43,50 @@ async def async_setup_entry(
     """Add sensors for passed config_entry in HA."""
 
     # retrieve our api instance
-    coordinator: BusArrivalUpdateCoordinator = config_entry.runtime_data
+    service: SgBusArrivalsService = config_entry.runtime_data
+    scan_interval: int = config_entry.data[CONF_SCAN_INTERVAL]
+    bus_arrival_coordinator: BusArrivalUpdateCoordinator = BusArrivalUpdateCoordinator(
+        hass, config_entry, service, scan_interval
+    )
 
     # Fetch initial data so we have data when entities subscribe
-    await coordinator.async_refresh()
+    await bus_arrival_coordinator.async_refresh()
 
     for subentry in config_entry.subentries.values():
-        sensors: list[BusArrivalSensor] = [
-            BusArrivalSensor(
-                config_entry,
-                subentry,
-                sensor_description,
-                subentry.data[SUBENTRY_BUS_STOP_CODE],
-                subentry.data[SUBENTRY_DESCRIPTION],
-                subentry.data[SUBENTRY_SERVICE_NO],
-            )
-            for sensor_description in SENSOR_DESCRIPTIONS
-        ]
+        if subentry.subentry_type == SUBENTRY_TYPE_BUS_SERVICE:
+            sensors: list[BusArrivalSensor] = [
+                BusArrivalSensor(
+                    bus_arrival_coordinator,
+                    subentry,
+                    sensor_description,
+                    subentry.data[SUBENTRY_BUS_STOP_CODE],
+                    subentry.data[SUBENTRY_DESCRIPTION],
+                    subentry.data[SUBENTRY_SERVICE_NO],
+                )
+                for sensor_description in SENSOR_DESCRIPTIONS
+            ]
 
-        async_add_entities(
-            sensors, update_before_add=True, config_subentry_id=subentry.subentry_id
-        )
+            async_add_entities(
+                sensors, update_before_add=True, config_subentry_id=subentry.subentry_id
+            )
+
+        else:
+            train_service_alerts_coordinator: TrainServiceAlertsUpdateCoordinator = (
+                TrainServiceAlertsUpdateCoordinator(
+                    hass, config_entry, service, scan_interval
+                )
+            )
+
+            sensors: list[TrainServiceAlertSensor] = [
+                TrainServiceAlertSensor(
+                    train_service_alerts_coordinator, subentry, sensor_description
+                )
+                for sensor_description in _get_train_service_alerts_sensor_descriptions(service)
+            ]
+
+            async_add_entities(
+                sensors, update_before_add=True, config_subentry_id=subentry.subentry_id
+            )
 
 
 # Coordinator is used to centralize the data updates
@@ -73,7 +102,31 @@ class SgBusArrivalsSensorDescription(SensorEntityDescription):
     value_fn: Callable[[int, BusArrival], int | None]
 
 
-def _get_sensor_descriotions() -> list[SgBusArrivalsSensorDescription]:
+@dataclass(frozen=True, kw_only=True)
+class TrainServiceAlertSensorDescription(SensorEntityDescription):
+    """Describes the bus arrival sensor entity."""
+
+    line: str
+    value_fn: Callable[[str, dict[str, list[str]]], str]
+
+
+def _get_train_service_alerts_sensor_descriptions(
+    service: SgBusArrivalsService,
+) -> list[TrainServiceAlertSensorDescription]:
+    lines: list[str] = service.get_train_lines()
+    return [
+        TrainServiceAlertSensorDescription(
+            key=f"train_service_alerts_{line}",
+            line=line,
+            device_class=SensorDeviceClass.ENUM,
+            value_fn=lambda line, alerts: alerts[line] if alerts else None,
+            translation_key=f"train_service_alerts_{line}",
+        )
+        for line in lines
+    ]
+
+
+def _get_sensor_descriptions() -> list[SgBusArrivalsSensorDescription]:
     sensor_descriptions = []
     for i in range(1, 4):
         sensor_descriptions.append(
@@ -87,7 +140,7 @@ def _get_sensor_descriotions() -> list[SgBusArrivalsSensorDescription]:
                 value_fn=lambda cardinality, bus_arrival: bus_arrival.next_bus[
                     cardinality - 1
                 ].estimated_arrival_minutes,
-                translation_key=f"next_bus_{i}_estimated_arrival",
+                translation_key="next_bus_estimated_arrival",
             )
         )
 
@@ -99,7 +152,7 @@ def _get_sensor_descriotions() -> list[SgBusArrivalsSensorDescription]:
                 value_fn=lambda cardinality, bus_arrival: bus_arrival.next_bus[
                     cardinality - 1
                 ].bus_type,
-                translation_key=f"next_bus_{i}_bus_type",
+                translation_key="next_bus_bus_type",
             )
         )
 
@@ -111,7 +164,7 @@ def _get_sensor_descriotions() -> list[SgBusArrivalsSensorDescription]:
                 value_fn=lambda cardinality, bus_arrival: bus_arrival.next_bus[
                     cardinality - 1
                 ].feature,
-                translation_key=f"next_bus_{i}_feature",
+                translation_key="next_bus_feature",
             )
         )
 
@@ -123,14 +176,44 @@ def _get_sensor_descriotions() -> list[SgBusArrivalsSensorDescription]:
                 value_fn=lambda cardinality, bus_arrival: bus_arrival.next_bus[
                     cardinality - 1
                 ].load,
-                translation_key=f"next_bus_{i}_load",
+                translation_key="next_bus_load",
             )
         )
 
     return sensor_descriptions
 
 
-SENSOR_DESCRIPTIONS: list[SgBusArrivalsSensorDescription] = _get_sensor_descriotions()
+SENSOR_DESCRIPTIONS: list[SgBusArrivalsSensorDescription] = _get_sensor_descriptions()
+
+
+class TrainServiceAlertSensor(TrainServiceAlertEntity, SensorEntity):
+    """Sensor tracking train service alerts."""
+
+    _attr_has_entity_name = True
+
+    def __init__(
+        self,
+        coordinator: TrainServiceAlertsUpdateCoordinator,
+        subentry: ConfigSubentry,
+        entity_description: TrainServiceAlertSensorDescription,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(coordinator)
+        self.entity_description = entity_description
+        self._attr_unique_id = f"train_service_alerts_{entity_description.line}"
+        self.entity_id = f"sensor.sgbusarrivals_train_{entity_description.line}"
+
+        self._attr_device_info = DeviceInfo(
+            entry_type=DeviceEntryType.SERVICE,
+            identifiers={(DOMAIN, subentry.subentry_id)},
+        )
+
+    @property
+    def native_value(self) -> str:
+        """Return the state of the entity."""
+        line: str = self.entity_description.line
+        alerts: dict[str, list[str]] = self.coordinator.data
+        return self.entity_description.value_fn(line, alerts)
 
 
 class BusArrivalSensor(BusArrivalEntity, SensorEntity):
@@ -140,7 +223,7 @@ class BusArrivalSensor(BusArrivalEntity, SensorEntity):
 
     def __init__(
         self,
-        config_entry: SgBusArrivalsConfigEntry,
+        coordinator: BusArrivalUpdateCoordinator,
         subentry: ConfigSubentry,
         entity_description: SgBusArrivalsSensorDescription,
         bus_stop_code: str,
@@ -148,7 +231,7 @@ class BusArrivalSensor(BusArrivalEntity, SensorEntity):
         service_no: str,
     ) -> None:
         """Initialize the sensor."""
-        super().__init__(config_entry)
+        super().__init__(coordinator)
         self.entity_description = entity_description
 
         self._attr_unique_id = f"{bus_stop_code}_{service_no}_{entity_description.key}"

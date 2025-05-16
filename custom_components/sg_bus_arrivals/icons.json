@@ -6,6 +6,78 @@
     },
     "entity": {
         "sensor": {
+            "train_service_alerts_ccl": {
+                "default": "mdi:train",
+                "state": {
+                    "disrupted": "mdi:alert"
+                }
+            },
+            "train_service_alerts_cel": {
+                "default": "mdi:train",
+                "state": {
+                    "disrupted": "mdi:alert"
+                }
+            },
+            "train_service_alerts_cgl": {
+                "default": "mdi:train",
+                "state": {
+                    "disrupted": "mdi:alert"
+                }
+            },
+            "train_service_alerts_dtl": {
+                "default": "mdi:train",
+                "state": {
+                    "disrupted": "mdi:alert"
+                }
+            },
+            "train_service_alerts_ewl": {
+                "default": "mdi:train",
+                "state": {
+                    "disrupted": "mdi:alert"
+                }
+            },
+            "train_service_alerts_nsl": {
+                "default": "mdi:train",
+                "state": {
+                    "disrupted": "mdi:alert"
+                }
+            },
+            "train_service_alerts_nel": {
+                "default": "mdi:train",
+                "state": {
+                    "disrupted": "mdi:alert"
+                }
+            },
+            "train_service_alerts_pel": {
+                "default": "mdi:train",
+                "state": {
+                    "disrupted": "mdi:alert"
+                }
+            },
+            "train_service_alerts_pwl": {
+                "default": "mdi:train",
+                "state": {
+                    "disrupted": "mdi:alert"
+                }
+            },
+            "train_service_alerts_sel": {
+                "default": "mdi:train",
+                "state": {
+                    "disrupted": "mdi:alert"
+                }
+            },
+            "train_service_alerts_swl": {
+                "default": "mdi:train",
+                "state": {
+                    "disrupted": "mdi:alert"
+                }
+            },
+            "train_service_alerts_bpl": {
+                "default": "mdi:train",
+                "state": {
+                    "disrupted": "mdi:alert"
+                }
+            },
             "next_bus_1_bus_type": {
                 "state": {
                     "sd": "mdi:bus-side",

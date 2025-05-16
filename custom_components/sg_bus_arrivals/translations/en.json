@@ -48,6 +48,11 @@
         }
     },
     "config_subentries": {
+        "train_service_alerts": {
+            "initiate_flow": {
+                "user": "Add train service alerts"
+            }
+        },
         "bus_service": {
             "initiate_flow": {
                 "user": "Add new bus service"
@@ -98,16 +103,94 @@
     },
     "entity": {
         "sensor": {
-            "next_bus_1_estimated_arrival": {
+            "train_service_alerts_ccl": {
+                "name": "Circle Line",
+                "state": {
+                    "normal": "Normal",
+                    "disrupted": "Disrupted"
+                }
+            },
+            "train_service_alerts_cel": {
+                "name": "Circle Line Extension",
+                "state": {
+                    "normal": "Normal",
+                    "disrupted": "Disrupted"
+                }
+            },
+            "train_service_alerts_cgl": {
+                "name": "Changi Extension",
+                "state": {
+                    "normal": "Normal",
+                    "disrupted": "Disrupted"
+                }
+            },
+            "train_service_alerts_dtl": {
+                "name": "Downtown Line",
+                "state": {
+                    "normal": "Normal",
+                    "disrupted": "Disrupted"
+                }
+            },
+            "train_service_alerts_ewl": {
+                "name": "East West Line",
+                "state": {
+                    "normal": "Normal",
+                    "disrupted": "Disrupted"
+                }
+            },
+            "train_service_alerts_nel": {
+                "name": "North East Line",
+                "state": {
+                    "normal": "Normal",
+                    "disrupted": "Disrupted"
+                }
+            },
+            "train_service_alerts_nsl": {
+                "name": "North South Line",
+                "state": {
+                    "normal": "Normal",
+                    "disrupted": "Disrupted"
+                }
+            },
+            "train_service_alerts_pel": {
+                "name": "Punggol LRT East Loop",
+                "state": {
+                    "normal": "Normal",
+                    "disrupted": "Disrupted"
+                }
+            },
+            "train_service_alerts_pwl": {
+                "name": "Punggol LET West Loop",
+                "state": {
+                    "normal": "Normal",
+                    "disrupted": "Disrupted"
+                }
+            },
+            "train_service_alerts_sel": {
+                "name": "SengKang LRT East Loop",
+                "state": {
+                    "normal": "Normal",
+                    "disrupted": "Disrupted"
+                }
+            },
+            "train_service_alerts_swl": {
+                "name": "SengKang LRT West Loop",
+                "state": {
+                    "normal": "Normal",
+                    "disrupted": "Disrupted"
+                }
+            },
+            "train_service_alerts_bpl": {
+                "name": "Bukit Panjang LRT",
+                "state": {
+                    "normal": "Normal",
+                    "disrupted": "Disrupted"
+                }
+            },
+            "next_bus_estimated_arrival": {
                 "name": "Estimated arrival"
             },
-            "next_bus_2_estimated_arrival": {
-                "name": "Estimated arrival"
-            },
-            "next_bus_3_estimated_arrival": {
-                "name": "Estimated arrival"
-            },
-            "next_bus_1_bus_type": {
+            "next_bus_bus_type": {
                 "name": "Bus type",
                 "state": {
                     "sd": "Single Deck",
@@ -115,23 +198,7 @@
                     "bd": "Bendy"
                 }
             },
-            "next_bus_2_bus_type": {
-                "name": "Bus type",
-                "state": {
-                    "sd": "Single Deck",
-                    "dd": "Double Deck",
-                    "bd": "Bendy"
-                }
-            },
-            "next_bus_3_bus_type": {
-                "name": "Bus type",
-                "state": {
-                    "sd": "Single Deck",
-                    "dd": "Double Deck",
-                    "bd": "Bendy"
-                }
-            },
-            "next_bus_1_load": {
+            "next_bus_load": {
                 "name": "Load",
                 "state": {
                     "sea": "Seats available",
@@ -139,35 +206,7 @@
                     "lsd": "Limited standing"
                 }
             },
-            "next_bus_2_load": {
-                "name": "Load",
-                "state": {
-                    "sea": "Seats available",
-                    "sda": "Standing available",
-                    "lsd": "Limited standing"
-                }
-            },
-            "next_bus_3_load": {
-                "name": "Load",
-                "state": {
-                    "sea": "Seats available",
-                    "sda": "Standing available",
-                    "lsd": "Limited standing"
-                }
-            },
-            "next_bus_1_feature": {
-                "name": "Feature",
-                "state": {
-                    "wab": "Wheel-chair accessible"
-                }
-            },
-            "next_bus_2_feature": {
-                "name": "Feature",
-                "state": {
-                    "wab": "Wheel-chair accessible"
-                }
-            },
-            "next_bus_3_feature": {
+            "next_bus_feature": {
                 "name": "Feature",
                 "state": {
                     "wab": "Wheel-chair accessible"

@@ -159,6 +159,39 @@ class SgBusArrivalsService:
 
         return int(minutes)  # rounded down
 
+    def get_train_lines(self) -> list[str]:
+        """Get train service lines."""
+        return [
+            "ccl",
+            "cel",
+            "cgl",
+            "dtl",
+            "ewl",
+            "nel",
+            "nsl",
+            "pel",
+            "pwl",
+            "sel",
+            "swl",
+            "bpl",
+        ]
+
+    async def get_train_service_alerts(self) -> dict[str, list[str]]:
+        """Get train service alerts."""
+        alerts: dict[str, list[str]] = {}
+
+        response: Any = await self._get_request("/TrainServiceAlerts")
+
+        value: dict[str, Any] = response["value"]
+        affected_segments: list[dict[str, str]] = value["AffectedSegments"]
+        all_messages: list[str] = value["Message"]
+
+        for affected_segment in affected_segments:
+            line: str = affected_segment["Line"]
+            alerts[line] = [message["Content"] for message in all_messages if line in message["Content"]]
+
+        return alerts
+
 
 class ApiGeneralError(Exception):
     """Error to indicate api failed."""
