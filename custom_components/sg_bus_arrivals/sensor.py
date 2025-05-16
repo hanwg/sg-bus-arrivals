@@ -30,7 +30,7 @@ from .coordinator import (
     TrainServiceAlertsUpdateCoordinator,
 )
 from .entity import BusArrivalEntity, TrainServiceAlertEntity
-from .models import BusArrival
+from .models import BusArrival, TrainServiceAlert
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -76,12 +76,15 @@ async def async_setup_entry(
                     hass, config_entry, service, scan_interval
                 )
             )
+            await train_service_alerts_coordinator.async_refresh()
 
             sensors: list[TrainServiceAlertSensor] = [
                 TrainServiceAlertSensor(
                     train_service_alerts_coordinator, subentry, sensor_description
                 )
-                for sensor_description in _get_train_service_alerts_sensor_descriptions(service)
+                for sensor_description in _get_train_service_alerts_sensor_descriptions(
+                    service
+                )
             ]
 
             async_add_entities(
@@ -107,7 +110,7 @@ class TrainServiceAlertSensorDescription(SensorEntityDescription):
     """Describes the bus arrival sensor entity."""
 
     line: str
-    value_fn: Callable[[str, dict[str, list[str]]], str]
+    value_fn: Callable[[str, dict[str, TrainServiceAlert]], str]
 
 
 def _get_train_service_alerts_sensor_descriptions(
@@ -119,7 +122,7 @@ def _get_train_service_alerts_sensor_descriptions(
             key=f"train_service_alerts_{line}",
             line=line,
             device_class=SensorDeviceClass.ENUM,
-            value_fn=lambda line, alerts: alerts[line] if alerts else None,
+            value_fn=lambda line, alerts: alerts[line].status,
             translation_key=f"train_service_alerts_{line}",
         )
         for line in lines
@@ -198,13 +201,14 @@ class TrainServiceAlertSensor(TrainServiceAlertEntity, SensorEntity):
         entity_description: TrainServiceAlertSensorDescription,
     ) -> None:
         """Initialize the sensor."""
-        super().__init__(coordinator)
+        super().__init__(entity_description.line, coordinator)
         self.entity_description = entity_description
         self._attr_unique_id = f"train_service_alerts_{entity_description.line}"
         self.entity_id = f"sensor.sgbusarrivals_train_{entity_description.line}"
 
         self._attr_device_info = DeviceInfo(
             entry_type=DeviceEntryType.SERVICE,
+            translation_key="train_service_alerts",
             identifiers={(DOMAIN, subentry.subentry_id)},
         )
 
@@ -212,7 +216,7 @@ class TrainServiceAlertSensor(TrainServiceAlertEntity, SensorEntity):
     def native_value(self) -> str:
         """Return the state of the entity."""
         line: str = self.entity_description.line
-        alerts: dict[str, list[str]] = self.coordinator.data
+        alerts: dict[str, TrainServiceAlert] = self.coordinator.data
         return self.entity_description.value_fn(line, alerts)
 
 

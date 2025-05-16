@@ -29,3 +29,11 @@ class BusStop:
     bus_stop_code: str
     road_name: str
     description: str
+
+
+@dataclass
+class TrainServiceAlert:
+    """Class representing a train service alert."""
+
+    status: str
+    messages: list[str]

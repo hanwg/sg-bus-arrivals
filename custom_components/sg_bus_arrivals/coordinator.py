@@ -17,14 +17,14 @@ from .const import (
     SUBENTRY_TYPE_BUS_SERVICE,
     TASK_ALL_BUS_SERVICES,
 )
-from .models import BusArrival
+from .models import BusArrival, TrainServiceAlert
 
 _LOGGER = logging.getLogger(__name__)
 
 type SgBusArrivalsConfigEntry = ConfigEntry[SgBusArrivalsService]
 
 
-class TrainServiceAlertsUpdateCoordinator(DataUpdateCoordinator):
+class TrainServiceAlertsUpdateCoordinator(DataUpdateCoordinator[dict[str, TrainServiceAlert]]):
     """Coordinator that polls for train service alerts."""
 
     def __init__(

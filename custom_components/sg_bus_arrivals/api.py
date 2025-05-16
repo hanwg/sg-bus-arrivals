@@ -8,7 +8,7 @@ from typing import Any
 import aiohttp
 
 from . import const
-from .models import BusArrival, BusStop, NextBus
+from .models import BusArrival, BusStop, NextBus, TrainServiceAlert
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -176,19 +176,24 @@ class SgBusArrivalsService:
             "bpl",
         ]
 
-    async def get_train_service_alerts(self) -> dict[str, list[str]]:
+    async def get_train_service_alerts(self) -> dict[str, TrainServiceAlert]:
         """Get train service alerts."""
         alerts: dict[str, list[str]] = {}
 
         response: Any = await self._get_request("/TrainServiceAlerts")
-
         value: dict[str, Any] = response["value"]
-        affected_segments: list[dict[str, str]] = value["AffectedSegments"]
         all_messages: list[str] = value["Message"]
 
-        for affected_segment in affected_segments:
-            line: str = affected_segment["Line"]
-            alerts[line] = [message["Content"] for message in all_messages if line in message["Content"]]
+        train_lines: list[str] = self.get_train_lines()
+        for train_line in train_lines:
+            messages: list[str] = [
+                message["Content"]
+                for message in all_messages
+                if train_line in message["Content"]
+            ]
+            alerts[train_line] = TrainServiceAlert(
+                "disrupted" if messages else "normal", messages
+            )
 
         return alerts
 

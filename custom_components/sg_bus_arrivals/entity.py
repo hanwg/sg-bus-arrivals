@@ -9,7 +9,7 @@ from .coordinator import (
     BusArrivalUpdateCoordinator,
     TrainServiceAlertsUpdateCoordinator,
 )
-from .models import BusArrival
+from .models import BusArrival, TrainServiceAlert
 
 
 class TrainServiceAlertEntity(CoordinatorEntity[TrainServiceAlertsUpdateCoordinator]):
@@ -17,9 +17,20 @@ class TrainServiceAlertEntity(CoordinatorEntity[TrainServiceAlertsUpdateCoordina
 
     _attr_has_entity_name = True
 
-    def __init__(self, coordinator: TrainServiceAlertsUpdateCoordinator) -> None:
+    def __init__(self, line: str, coordinator: TrainServiceAlertsUpdateCoordinator) -> None:
         """Initialize."""
         super().__init__(coordinator)
+        self._line = line
+
+    @property
+    def extra_state_attributes(self) -> Mapping[str, Any]:
+        """Return the extra state attributes."""
+
+        alerts: dict[str, TrainServiceAlert] = self.coordinator.data
+
+        attrs: Mapping[str, Any] = {}
+        attrs["messages"] = alerts[self._line].messages
+        return attrs
 
 
 class BusArrivalEntity(CoordinatorEntity[BusArrivalUpdateCoordinator]):
