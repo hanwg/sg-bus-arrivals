@@ -51,6 +51,9 @@
         "train_service_alerts": {
             "initiate_flow": {
                 "user": "Add train service alerts"
+            },
+            "step": {
+                "user": {}
             }
         },
         "bus_service": {
