@@ -42,7 +42,7 @@ class TrainServiceAlertsUpdateCoordinator(
         self,
         hass: HomeAssistant,
         config_entry: SgBusArrivalsConfigEntry,
-        service: SgBusArrivals,
+        sg_bus_arrivals: SgBusArrivals,
         scan_interval: int,
     ) -> None:
         """Initialize the train service alerts coordinator."""
@@ -54,11 +54,11 @@ class TrainServiceAlertsUpdateCoordinator(
             update_interval=timedelta(seconds=scan_interval),
             always_update=True,
         )
-        self._service = service
+        self._sg_bus_arrivals = sg_bus_arrivals
 
     async def _async_update_data(self):
         """Fetch train service alerts from api."""
-        return await self._service.get_train_service_alerts()
+        return await self._sg_bus_arrivals.get_train_service_alerts()
 
 
 class BusArrivalsUpdateCoordinator(
@@ -70,27 +70,23 @@ class BusArrivalsUpdateCoordinator(
         self,
         hass: HomeAssistant,
         config_entry: SgBusArrivalsConfigEntry,
-        service: SgBusArrivals,
+        sg_bus_arrivals: SgBusArrivals,
         scan_interval: int,
     ) -> None:
         """Initialize the bus arrival coordinator."""
         super().__init__(
             hass,
             _LOGGER,
-            name="Bus arrival times",
+            name="Bus arrivals",
             config_entry=config_entry,
-            # Polling interval. Will only be polled if there are subscribers.
             update_interval=timedelta(seconds=scan_interval),
-            # Set always_update to `False` if the data returned from the
-            # api can be compared via `__eq__` to avoid duplicate updates
-            # being dispatched to listeners
             always_update=True,
         )
-        self._service = service
+        self._sg_bus_arrivals = sg_bus_arrivals
         self._all_bus_services = {}
 
         async def _get_all_bus_services():
-            self._all_bus_services = await self._service.get_all_bus_services()
+            self._all_bus_services = await self._sg_bus_arrivals.get_all_bus_services()
 
         # this is a slow api call so we are initializing it on start up
         self._task: Task = hass.async_create_task(
@@ -122,7 +118,7 @@ class BusArrivalsUpdateCoordinator(
             async with timeout(10):
                 responses = await asyncio.gather(
                     *[
-                        self._service.get_bus_arrivals(bus_stop_code)
+                        self._sg_bus_arrivals.get_bus_arrivals(bus_stop_code)
                         for bus_stop_code in bus_stop_codes
                     ]
                 )
@@ -138,6 +134,6 @@ class BusArrivalsUpdateCoordinator(
                 _LOGGER.debug("coordinator updated data")
                 return all_bus_arrivals
         except ApiAuthenticationError as err:
-            raise ConfigEntryAuthFailed(err.m) from err
+            raise ConfigEntryAuthFailed from err
         except ApiGeneralError as err:
-            raise UpdateFailed("Failed to fetch data with LTA DataMall API") from err
+            raise UpdateFailed from err

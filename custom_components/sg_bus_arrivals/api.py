@@ -32,11 +32,20 @@ class SgBusArrivals:
             API_BASE_URL + endpoint,
             headers={"AccountKey": self._account_key},
         ) as response:
-            _LOGGER.debug(
-                "Invoking api, endpoint: %s, status: %s", endpoint, response.status
-            )
             if response.status == 200:
-                return await response.json()
+                json: Any = await response.json()
+                _LOGGER.debug(
+                    "Api invoked, endpoint: %s, status: %s", endpoint, response.status
+                )
+                return json
+
+            text: str = await response.text()
+            _LOGGER.warning(
+                "Api failed, endpoint: %s, status: %s, response: %s",
+                endpoint,
+                response.status,
+                text,
+            )
 
             if response.status == 401:
                 raise ApiAuthenticationError

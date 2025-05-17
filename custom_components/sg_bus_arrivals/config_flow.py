@@ -122,17 +122,17 @@ class SgBusArrivalsConfigFlow(ConfigFlow, domain=DOMAIN):
     async def validate_api(self, data: dict[str, Any], errors: dict[str, str]) -> None:
         """Validate the user input allows us to connect to the API."""
 
-        sg_bus_arrivals_data: SgBusArrivalsData = None
-        config_entries: list[ConfigEntry[SgBusArrivals]] = self._async_current_entries()
+        sg_bus_arrivals: SgBusArrivals = None
+        config_entries: list[ConfigEntry[SgBusArrivalsData]] = self._async_current_entries()
         if config_entries:
-            sg_bus_arrivals_data = config_entries[0].runtime_data
+            sg_bus_arrivals_data: SgBusArrivalsData = config_entries[0].runtime_data
+            sg_bus_arrivals = sg_bus_arrivals_data.api
         else:
             session: ClientSession = async_get_clientsession(self.hass)
-            sg_bus_arrivals_data = SgBusArrivals(session, data[CONF_API_KEY])
+            sg_bus_arrivals = SgBusArrivals(session, data[CONF_API_KEY])
 
-        service: SgBusArrivals = sg_bus_arrivals_data.api
         try:
-            await service.authenticate()
+            await sg_bus_arrivals.authenticate()
         except ApiAuthenticationError:
             errors["base"] = "invalid_auth"
         except ApiGeneralError:
