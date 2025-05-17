@@ -104,7 +104,7 @@ class SgBusArrivalsSensorDescription(SensorEntityDescription):
 
 @dataclass(frozen=True, kw_only=True)
 class TrainServiceAlertSensorDescription(SensorEntityDescription):
-    """Describes the bus arrival sensor entity."""
+    """Describes the train service alert sensor entity."""
 
     line: str
     value_fn: Callable[[str, dict[str, TrainServiceAlert]], str]
@@ -200,8 +200,8 @@ class TrainServiceAlertSensor(TrainServiceAlertEntity, SensorEntity):
         """Initialize the sensor."""
         super().__init__(entity_description.line, coordinator)
         self.entity_description = entity_description
-        self._attr_unique_id = f"train_service_alerts_{entity_description.line}"
-        self.entity_id = f"sensor.sgbusarrivals_train_{entity_description.line}"
+        self._attr_unique_id = f"train_service_alert_{entity_description.line}"
+        self.entity_id = f"sensor.sgbusarrivals_train_service_alert_{entity_description.line}"
 
         self._attr_device_info = DeviceInfo(
             entry_type=DeviceEntryType.SERVICE,
