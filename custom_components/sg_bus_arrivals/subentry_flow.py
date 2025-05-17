@@ -14,10 +14,10 @@ from homeassistant.helpers.selector import (
 
 from .api import SgBusArrivals
 from .const import (
-    SUBENTRY_BUS_STOP_CODE,
-    SUBENTRY_DESCRIPTION,
-    SUBENTRY_ROAD_NAME,
-    SUBENTRY_SERVICE_NO,
+    SUBENTRY_CONF_BUS_STOP_CODE,
+    SUBENTRY_CONF_DESCRIPTION,
+    SUBENTRY_CONF_ROAD_NAME,
+    SUBENTRY_CONF_SERVICE_NO,
     SUBENTRY_TYPE_TRAIN_SERVICE_ALERTS,
 )
 from .coordinator import (
@@ -30,7 +30,7 @@ from .models import BusStop
 _LOGGER = logging.getLogger(__name__)
 
 STEP_USER_DATA_SCHEMA: vol.Schema = vol.Schema(
-    {vol.Required(SUBENTRY_BUS_STOP_CODE): str}
+    {vol.Required(SUBENTRY_CONF_BUS_STOP_CODE): str}
 )
 
 
@@ -86,7 +86,7 @@ class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
         errors: dict[str, str] = {}
         if user_input is not None:
             bus_stop: BusStop = await self._validate_bus_stop(
-                user_input[SUBENTRY_BUS_STOP_CODE], errors
+                user_input[SUBENTRY_CONF_BUS_STOP_CODE], errors
             )
             _LOGGER.debug("validate_bus_stop, bus_stop: %s", bus_stop)
 
@@ -106,20 +106,20 @@ class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
         """Prompt user for bus service number."""
         errors: dict[str, str] = {}
         config_entry: SgBusArrivalsConfigEntry = self._get_entry()
-        if SUBENTRY_SERVICE_NO in user_input:
+        if SUBENTRY_CONF_SERVICE_NO in user_input:
             for existing_subentry in config_entry.subentries.values():
                 if (
                     existing_subentry.unique_id
-                    == f"{self.bus_stop_code}_{user_input[SUBENTRY_SERVICE_NO]}"
+                    == f"{self.bus_stop_code}_{user_input[SUBENTRY_CONF_SERVICE_NO]}"
                 ):
                     return self.async_abort(reason="already_configured")
 
-            user_input[SUBENTRY_BUS_STOP_CODE] = self.bus_stop_code
-            user_input[SUBENTRY_DESCRIPTION] = self.description
+            user_input[SUBENTRY_CONF_BUS_STOP_CODE] = self.bus_stop_code
+            user_input[SUBENTRY_CONF_DESCRIPTION] = self.description
             return self.async_create_entry(
-                title=f"{user_input[SUBENTRY_SERVICE_NO]} @{self.description}",
+                title=f"{user_input[SUBENTRY_CONF_SERVICE_NO]} @{self.description}",
                 data=user_input,
-                unique_id=f"{self.bus_stop_code}_{user_input[SUBENTRY_SERVICE_NO]}",
+                unique_id=f"{self.bus_stop_code}_{user_input[SUBENTRY_CONF_SERVICE_NO]}",
             )
 
         coordinator: BusArrivalsUpdateCoordinator = config_entry.runtime_data
@@ -129,7 +129,7 @@ class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
             step_id="service_no",
             data_schema=vol.Schema(
                 {
-                    vol.Required(SUBENTRY_SERVICE_NO): SelectSelector(
+                    vol.Required(SUBENTRY_CONF_SERVICE_NO): SelectSelector(
                         SelectSelectorConfig(
                             options=sorted(bus_services),
                             mode=SelectSelectorMode.DROPDOWN,
@@ -138,8 +138,8 @@ class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
                 }
             ),
             description_placeholders={
-                SUBENTRY_ROAD_NAME: self.road_name,
-                SUBENTRY_DESCRIPTION: self.description,
+                SUBENTRY_CONF_ROAD_NAME: self.road_name,
+                SUBENTRY_CONF_DESCRIPTION: self.description,
             },
             errors=errors,
         )

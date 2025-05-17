@@ -19,9 +19,9 @@ from . import SgBusArrivalsConfigEntry
 from .api import SgBusArrivals
 from .const import (
     DOMAIN,
-    SUBENTRY_BUS_STOP_CODE,
-    SUBENTRY_DESCRIPTION,
-    SUBENTRY_SERVICE_NO,
+    SUBENTRY_CONF_BUS_STOP_CODE,
+    SUBENTRY_CONF_DESCRIPTION,
+    SUBENTRY_CONF_SERVICE_NO,
     SUBENTRY_TYPE_BUS_SERVICE,
 )
 from .coordinator import (
@@ -63,9 +63,9 @@ async def async_setup_entry(
                     bus_arrival_coordinator,
                     subentry,
                     sensor_description,
-                    subentry.data[SUBENTRY_BUS_STOP_CODE],
-                    subentry.data[SUBENTRY_DESCRIPTION],
-                    subentry.data[SUBENTRY_SERVICE_NO],
+                    subentry.data[SUBENTRY_CONF_BUS_STOP_CODE],
+                    subentry.data[SUBENTRY_CONF_DESCRIPTION],
+                    subentry.data[SUBENTRY_CONF_SERVICE_NO],
                 )
                 for sensor_description in SENSOR_DESCRIPTIONS
             ]
@@ -201,7 +201,9 @@ class TrainServiceAlertSensor(TrainServiceAlertEntity, SensorEntity):
         super().__init__(entity_description.line, coordinator)
         self.entity_description = entity_description
         self._attr_unique_id = f"train_service_alert_{entity_description.line}"
-        self.entity_id = f"sensor.sgbusarrivals_train_service_alert_{entity_description.line}"
+        self.entity_id = (
+            f"sensor.sgbusarrivals_train_service_alert_{entity_description.line}"
+        )
 
         self._attr_device_info = DeviceInfo(
             entry_type=DeviceEntryType.SERVICE,

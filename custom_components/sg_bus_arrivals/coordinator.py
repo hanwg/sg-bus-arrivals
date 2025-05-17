@@ -15,11 +15,7 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import ApiAuthenticationError, ApiGeneralError, SgBusArrivals
-from .const import (
-    SUBENTRY_BUS_STOP_CODE,
-    SUBENTRY_TYPE_BUS_SERVICE,
-    TASK_ALL_BUS_SERVICES,
-)
+from .const import SUBENTRY_CONF_BUS_STOP_CODE, SUBENTRY_TYPE_BUS_SERVICE
 from .models import BusArrival, TrainServiceAlert
 
 _LOGGER = logging.getLogger(__name__)
@@ -96,8 +92,9 @@ class BusArrivalsUpdateCoordinator(
         async def _get_all_bus_services():
             self._all_bus_services = await self._service.get_all_bus_services()
 
+        # this is a slow api call so we are initializing it on start up
         self._task: Task = hass.async_create_task(
-            _get_all_bus_services(), TASK_ALL_BUS_SERVICES
+            _get_all_bus_services(), "get all bus services"
         )
 
     async def get_bus_services(self, bus_stop_code: str) -> set[str]:
@@ -114,7 +111,7 @@ class BusArrivalsUpdateCoordinator(
         bus_stop_codes: set[str] = set()
         for subentry in self.config_entry.subentries.values():
             if subentry.subentry_type == SUBENTRY_TYPE_BUS_SERVICE:
-                bus_stop_codes.add(subentry.data[SUBENTRY_BUS_STOP_CODE])
+                bus_stop_codes.add(subentry.data[SUBENTRY_CONF_BUS_STOP_CODE])
 
         all_bus_arrivals: dict[str, dict[str, BusArrival]] = collections.defaultdict(
             dict

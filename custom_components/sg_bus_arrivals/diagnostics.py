@@ -9,8 +9,8 @@ from homeassistant.const import CONF_API_KEY
 from homeassistant.core import HomeAssistant
 
 from .const import (
-    SUBENTRY_BUS_STOP_CODE,
-    SUBENTRY_SERVICE_NO,
+    SUBENTRY_CONF_BUS_STOP_CODE,
+    SUBENTRY_CONF_SERVICE_NO,
     SUBENTRY_TYPE_TRAIN_SERVICE_ALERTS,
 )
 from .coordinator import SgBusArrivalsConfigEntry
@@ -34,8 +34,8 @@ async def async_get_config_entry_diagnostics(
             diagnostics["train_service_alerts"] = "True"
         else:
             diagnostics["bus_services"].append({
-                SUBENTRY_BUS_STOP_CODE: subentry.data[SUBENTRY_BUS_STOP_CODE],
-                SUBENTRY_SERVICE_NO: subentry.data[SUBENTRY_SERVICE_NO]
+                SUBENTRY_CONF_BUS_STOP_CODE: subentry.data[SUBENTRY_CONF_BUS_STOP_CODE],
+                SUBENTRY_CONF_SERVICE_NO: subentry.data[SUBENTRY_CONF_SERVICE_NO]
             })
 
     return diagnostics
