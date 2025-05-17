@@ -7,12 +7,12 @@ from aiohttp import ClientSession
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_API_KEY, CONF_SCAN_INTERVAL, Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .api import ApiAuthenticationError, SgBusArrivalsService
+from .api import ApiAuthenticationError, ApiGeneralError, SgBusArrivals
 from .const import DOMAIN, SERVICE_REFRESH_BUS_ARRIVALS
-from .coordinator import BusArrivalUpdateCoordinator, SgBusArrivalsConfigEntry
+from .coordinator import BusArrivalsUpdateCoordinator, SgBusArrivalsConfigEntry
 
 _PLATFORMS: list[Platform] = [Platform.SENSOR]
 
@@ -24,27 +24,28 @@ async def async_setup_entry(
 
     # create instance of our api
     session: ClientSession = async_get_clientsession(hass)
-    service: SgBusArrivalsService = SgBusArrivalsService(
-        session, entry.data[CONF_API_KEY]
-    )
-    coordinator: BusArrivalUpdateCoordinator = BusArrivalUpdateCoordinator(
-        hass, entry, service, entry.data[CONF_SCAN_INTERVAL]
+    sg_bus_arrivals: SgBusArrivals = SgBusArrivals(session, entry.data[CONF_API_KEY])
+    bus_arrivals_coordinator: BusArrivalsUpdateCoordinator = BusArrivalsUpdateCoordinator(
+        hass, entry, sg_bus_arrivals, entry.data[CONF_SCAN_INTERVAL]
     )
 
+    # validate our api
     try:
-        await service.authenticate()
+        await sg_bus_arrivals.authenticate()
     except ApiAuthenticationError as e:
         raise ConfigEntryAuthFailed from e
+    except ApiGeneralError as e:
+        raise ConfigEntryNotReady from e
 
     # store reference to our api so that sensor entites can use it
-    entry.runtime_data = service
+    entry.runtime_data = sg_bus_arrivals
 
     # Registers update listener to update config entry when options are updated.
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
     async def refresh_bus_arrivals(call) -> None:
         """Service call to refresh the bus arrivals."""
-        await coordinator.async_request_refresh()
+        await bus_arrivals_coordinator.async_request_refresh()
 
     hass.services.async_register(
         DOMAIN, SERVICE_REFRESH_BUS_ARRIVALS, refresh_bus_arrivals

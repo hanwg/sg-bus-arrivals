@@ -12,7 +12,7 @@ from homeassistant.helpers.selector import (
     SelectSelectorMode,
 )
 
-from .api import SgBusArrivalsService
+from .api import SgBusArrivals
 from .const import (
     SUBENTRY_BUS_STOP_CODE,
     SUBENTRY_DESCRIPTION,
@@ -20,7 +20,7 @@ from .const import (
     SUBENTRY_SERVICE_NO,
     SUBENTRY_TYPE_TRAIN_SERVICE_ALERTS,
 )
-from .coordinator import BusArrivalUpdateCoordinator, SgBusArrivalsConfigEntry
+from .coordinator import BusArrivalsUpdateCoordinator, SgBusArrivalsConfigEntry
 from .models import BusStop
 
 _LOGGER = logging.getLogger(__name__)
@@ -38,10 +38,9 @@ class TrainServiceAlertsSubEntryFlowHandler(ConfigSubentryFlow):
     ) -> SubentryFlowResult:
         """Create subentry."""
         config_entry: SgBusArrivalsConfigEntry = self._get_entry()
-        if SUBENTRY_SERVICE_NO in user_input:
-            for existing_subentry in config_entry.subentries.values():
-                if existing_subentry.subentry_type == SUBENTRY_TYPE_TRAIN_SERVICE_ALERTS:
-                    return self.async_abort(reason="already_configured")
+        for existing_subentry in config_entry.subentries.values():
+            if existing_subentry.subentry_type == SUBENTRY_TYPE_TRAIN_SERVICE_ALERTS:
+                return self.async_abort(reason="already_configured")
 
         return self.async_create_entry(
             title="Train Service Alerts",
@@ -67,7 +66,7 @@ class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
         Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
         """
         config_entry: SgBusArrivalsConfigEntry = self._get_entry()
-        service: SgBusArrivalsService = config_entry.runtime_data
+        service: SgBusArrivals = config_entry.runtime_data
         bus_stop: BusStop = await service.get_bus_stop(data)
 
         if bus_stop is None:
@@ -118,7 +117,7 @@ class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
                 unique_id=f"{self.bus_stop_code}_{user_input[SUBENTRY_SERVICE_NO]}",
             )
 
-        coordinator: BusArrivalUpdateCoordinator = config_entry.runtime_data
+        coordinator: BusArrivalsUpdateCoordinator = config_entry.runtime_data
         bus_services: list[str] = await coordinator.get_bus_services(self.bus_stop_code)
 
         return self.async_show_form(

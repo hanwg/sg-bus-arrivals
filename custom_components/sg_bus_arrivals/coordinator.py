@@ -1,8 +1,11 @@
 """Poll for bus arrival times."""
 
+from __future__ import annotations
+
 import asyncio
 from asyncio import Task, timeout
 import collections
+from dataclasses import dataclass
 from datetime import timedelta
 import logging
 
@@ -11,7 +14,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .api import ApiAuthenticationError, ApiGeneralError, SgBusArrivalsService
+from .api import ApiAuthenticationError, ApiGeneralError, SgBusArrivals
 from .const import (
     SUBENTRY_BUS_STOP_CODE,
     SUBENTRY_TYPE_BUS_SERVICE,
@@ -21,17 +24,29 @@ from .models import BusArrival, TrainServiceAlert
 
 _LOGGER = logging.getLogger(__name__)
 
-type SgBusArrivalsConfigEntry = ConfigEntry[SgBusArrivalsService]
+
+@dataclass
+class SgBusArrivalsData:
+    """SgBusArrivals data class."""
+
+    api: SgBusArrivals
+    train_service_alerts_coordinator: TrainServiceAlertsUpdateCoordinator
+    bus_arrivals_coordinator: BusArrivalsUpdateCoordinator
 
 
-class TrainServiceAlertsUpdateCoordinator(DataUpdateCoordinator[dict[str, TrainServiceAlert]]):
+type SgBusArrivalsConfigEntry = ConfigEntry[SgBusArrivals]
+
+
+class TrainServiceAlertsUpdateCoordinator(
+    DataUpdateCoordinator[dict[str, TrainServiceAlert]]
+):
     """Coordinator that polls for train service alerts."""
 
     def __init__(
         self,
         hass: HomeAssistant,
         config_entry: SgBusArrivalsConfigEntry,
-        service: SgBusArrivalsService,
+        service: SgBusArrivals,
         scan_interval: int,
     ) -> None:
         """Initialize the train service alerts coordinator."""
@@ -40,11 +55,7 @@ class TrainServiceAlertsUpdateCoordinator(DataUpdateCoordinator[dict[str, TrainS
             _LOGGER,
             name="Train service alerts",
             config_entry=config_entry,
-            # Polling interval. Will only be polled if there are subscribers.
             update_interval=timedelta(seconds=scan_interval),
-            # Set always_update to `False` if the data returned from the
-            # api can be compared via `__eq__` to avoid duplicate updates
-            # being dispatched to listeners
             always_update=True,
         )
         self._service = service
@@ -53,7 +64,8 @@ class TrainServiceAlertsUpdateCoordinator(DataUpdateCoordinator[dict[str, TrainS
         """Fetch train service alerts from api."""
         return await self._service.get_train_service_alerts()
 
-class BusArrivalUpdateCoordinator(
+
+class BusArrivalsUpdateCoordinator(
     DataUpdateCoordinator[dict[str, dict[str, BusArrival]]]
 ):
     """Coordinator that polls for bus arrival times."""
@@ -62,7 +74,7 @@ class BusArrivalUpdateCoordinator(
         self,
         hass: HomeAssistant,
         config_entry: SgBusArrivalsConfigEntry,
-        service: SgBusArrivalsService,
+        service: SgBusArrivals,
         scan_interval: int,
     ) -> None:
         """Initialize the bus arrival coordinator."""
@@ -92,10 +104,6 @@ class BusArrivalUpdateCoordinator(
         """Fetch all bus services for the specified bus stop."""
         await self._task
         return self._all_bus_services[bus_stop_code]
-
-    def get_service(self) -> SgBusArrivalsService:
-        """Return the service instance."""
-        return self._service
 
     async def _async_update_data(self):
         """Fetch data from API endpoint.

@@ -17,7 +17,7 @@ from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from . import SgBusArrivalsConfigEntry
-from .api import SgBusArrivalsService
+from .api import SgBusArrivals
 from .const import (
     DOMAIN,
     SUBENTRY_BUS_STOP_CODE,
@@ -26,7 +26,7 @@ from .const import (
     SUBENTRY_TYPE_BUS_SERVICE,
 )
 from .coordinator import (
-    BusArrivalUpdateCoordinator,
+    BusArrivalsUpdateCoordinator,
     TrainServiceAlertsUpdateCoordinator,
 )
 from .entity import BusArrivalEntity, TrainServiceAlertEntity
@@ -43,9 +43,9 @@ async def async_setup_entry(
     """Add sensors for passed config_entry in HA."""
 
     # retrieve our api instance
-    service: SgBusArrivalsService = config_entry.runtime_data
+    service: SgBusArrivals = config_entry.runtime_data
     scan_interval: int = config_entry.data[CONF_SCAN_INTERVAL]
-    bus_arrival_coordinator: BusArrivalUpdateCoordinator = BusArrivalUpdateCoordinator(
+    bus_arrival_coordinator: BusArrivalsUpdateCoordinator = BusArrivalsUpdateCoordinator(
         hass, config_entry, service, scan_interval
     )
 
@@ -114,7 +114,7 @@ class TrainServiceAlertSensorDescription(SensorEntityDescription):
 
 
 def _get_train_service_alerts_sensor_descriptions(
-    service: SgBusArrivalsService,
+    service: SgBusArrivals,
 ) -> list[TrainServiceAlertSensorDescription]:
     lines: list[str] = service.get_train_lines()
     return [
@@ -227,7 +227,7 @@ class BusArrivalSensor(BusArrivalEntity, SensorEntity):
 
     def __init__(
         self,
-        coordinator: BusArrivalUpdateCoordinator,
+        coordinator: BusArrivalsUpdateCoordinator,
         subentry: ConfigSubentry,
         entity_description: SgBusArrivalsSensorDescription,
         bus_stop_code: str,

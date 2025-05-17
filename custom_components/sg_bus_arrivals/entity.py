@@ -6,7 +6,7 @@ from typing import Any
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .coordinator import (
-    BusArrivalUpdateCoordinator,
+    BusArrivalsUpdateCoordinator,
     TrainServiceAlertsUpdateCoordinator,
 )
 from .models import BusArrival, TrainServiceAlert
@@ -33,12 +33,12 @@ class TrainServiceAlertEntity(CoordinatorEntity[TrainServiceAlertsUpdateCoordina
         return attrs
 
 
-class BusArrivalEntity(CoordinatorEntity[BusArrivalUpdateCoordinator]):
+class BusArrivalEntity(CoordinatorEntity[BusArrivalsUpdateCoordinator]):
     """Bus arrival entity."""
 
     _attr_has_entity_name = True
 
-    def __init__(self, coordinator: BusArrivalUpdateCoordinator) -> None:
+    def __init__(self, coordinator: BusArrivalsUpdateCoordinator) -> None:
         """Initialize."""
         super().__init__(coordinator)
 

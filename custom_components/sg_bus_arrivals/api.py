@@ -7,15 +7,17 @@ from typing import Any
 
 import aiohttp
 
-from . import const
 from .models import BusArrival, BusStop, NextBus, TrainServiceAlert
 
 _LOGGER = logging.getLogger(__name__)
 
+API_BASE_URL = "https://datamall2.mytransport.sg/ltaodataservice"
+MAX_PAGES = 100
+
 
 # https://datamall.lta.gov.sg/content/dam/datamall/datasets/LTA_DataMall_API_User_Guide.pdf
-class SgBusArrivalsService:
-    """Service for handling API calls."""
+class SgBusArrivals:
+    """LTA DataMall API client."""
 
     def __init__(self, session: aiohttp.ClientSession, account_key: str) -> None:
         """Initialize with the given account key."""
@@ -24,10 +26,10 @@ class SgBusArrivalsService:
         self._account_key = account_key
 
     async def _get_request(self, endpoint: str) -> Any:
-        """Invoke API."""
+        """Invoke the given API endpoint."""
 
         async with self._session.get(
-            const.API_BASE_URL + endpoint,
+            API_BASE_URL + endpoint,
             headers={"AccountKey": self._account_key},
         ) as response:
             _LOGGER.debug(
@@ -46,14 +48,13 @@ class SgBusArrivalsService:
 
         # any random API call will work but this is the fastest and simplest
         # ApiAuthenticationError is thrown if authentication fails
-        await self._get_request("/BusServices")
+        await self._get_request("/TrainServiceAlerts")
 
     async def get_bus_stop(self, bus_stop_code: str) -> BusStop:
         """Get bus stop information by bus stop code."""
 
-        bus_stop: BusStop | None = None
         page: int = 0
-        while bus_stop is None:
+        while page < MAX_PAGES:
             page = page + 1
 
             response: Any = await self._get_request(f"/BusStops?page={page}")
@@ -65,38 +66,40 @@ class SgBusArrivalsService:
             # filter by bus stop code
             bus_stop = next(
                 (
-                    bus_stop
+                    BusStop(
+                        bus_stop["BusStopCode"],
+                        bus_stop["RoadName"],
+                        bus_stop["Description"],
+                    )
                     for bus_stop in response["value"]
                     if bus_stop["BusStopCode"] == bus_stop_code
                 ),
                 None,
             )
 
-        return BusStop(
-            bus_stop["BusStopCode"],
-            bus_stop["RoadName"],
-            bus_stop["Description"],
-        )
+            if bus_stop:
+                return bus_stop
+
+        return None
 
     async def get_all_bus_services(self) -> dict[str, set[str]]:
-        """Get bus services."""
+        """Get all bus services for all bus stops.
+
+        Returns a mapping of bus stop codes to the bus services.
+        This is a slow API call.
+        """
 
         start: float = time.time()
 
         all_bus_services: dict[str, set[str]] = {}
 
         page: int = 0
-        while True:
+        while page < MAX_PAGES:
             page = page + 1
             response: Any = await self._get_request(f"/BusRoutes?page={page}")
 
             if response["value"] == []:
-                end: float = time.time()
-                seconds_elapsed: float = end - start
-                _LOGGER.info(
-                    "Get all bus services completed in %f seconds", seconds_elapsed
-                )
-                return all_bus_services
+                break
 
             for bus_route in response["value"]:
                 bus_stop_code: str = bus_route["BusStopCode"]
@@ -106,8 +109,13 @@ class SgBusArrivalsService:
                 bus_services: set[str] = all_bus_services[bus_stop_code]
                 bus_services.add(bus_route["ServiceNo"])
 
+        end: float = time.time()
+        seconds_elapsed: float = end - start
+        _LOGGER.info("Get all bus services completed in %f seconds", seconds_elapsed)
+        return all_bus_services
+
     async def get_bus_services(self, bus_stop_code: str) -> list[str]:
-        """Get bus services."""
+        """Get bus services for the given bus stop."""
 
         all_bus_services: dict[str, set[str]] = await self.get_all_bus_services()
         return all_bus_services[bus_stop_code]

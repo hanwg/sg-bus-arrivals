@@ -18,7 +18,6 @@ from homeassistant.config_entries import (
 )
 from homeassistant.const import CONF_API_KEY, CONF_SCAN_INTERVAL
 from homeassistant.core import callback
-from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.selector import (
     TextSelector,
@@ -26,14 +25,13 @@ from homeassistant.helpers.selector import (
     TextSelectorType,
 )
 
-from .api import SgBusArrivalsService
+from .api import ApiAuthenticationError, ApiGeneralError, SgBusArrivals
 from .const import (
     DOMAIN,
     MIN_SCAN_INTERVAL_SECONDS,
     SUBENTRY_TYPE_BUS_SERVICE,
     SUBENTRY_TYPE_TRAIN_SERVICE_ALERTS,
 )
-from .coordinator import BusArrivalUpdateCoordinator
 from .subentry_flow import (
     BusServiceSubEntryFlowHandler,
     TrainServiceAlertsSubEntryFlowHandler,
@@ -121,24 +119,22 @@ class SgBusArrivalsConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
     async def validate_api(self, data: dict[str, Any], errors: dict[str, str]) -> None:
-        """Validate the user input allows us to connect.
+        """Validate the user input allows us to connect to the API."""
 
-        Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
-        """
-
-        service: SgBusArrivalsService = None
-        config_entries: list[ConfigEntry] = self._async_current_entries()
+        service: SgBusArrivals = None
+        config_entries: list[ConfigEntry[SgBusArrivals]] = self._async_current_entries()
         if config_entries:
-            coordinator: BusArrivalUpdateCoordinator = config_entries[0].runtime_data
-            service = coordinator.get_service()
+            service = config_entries[0].runtime_data
         else:
             session: ClientSession = async_get_clientsession(self.hass)
-            service = SgBusArrivalsService(session, data[CONF_API_KEY])
+            service = SgBusArrivals(session, data[CONF_API_KEY])
 
         try:
             await service.authenticate()
-        except ConfigEntryAuthFailed:
+        except ApiAuthenticationError:
             errors["base"] = "invalid_auth"
+        except ApiGeneralError:
+            errors["base"] = "cannot_connect"
 
         return errors
 

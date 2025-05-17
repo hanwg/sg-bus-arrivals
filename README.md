@@ -125,13 +125,13 @@ The bus arrival sensors are created via the [Add new bus service](#add-new-bus-s
 - If there are no more bus arrivals (e.g. last bus already departed), the sensor will show `Unknown`. If there was an error fetching the arrival time, the sensor will show `Unavailable`.
 
 
-### Service actions
+## Actions
 
-These are service actions which you can use in automations.
+The integration provides the following actions.
 
-#### Refresh bus arrivals
+#### Action: Refresh bus arrivals
 
-This action initiates a fetch using the LTA DataMall API to update all of the integration's sensors.
+The `sg_bus_arrivals.refresh_bus_arrivals` action initiates a fetch using the LTA DataMall API to update all of the integration's sensors.
 
 YAML:
 ```

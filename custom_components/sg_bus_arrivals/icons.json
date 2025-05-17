@@ -78,61 +78,21 @@
                     "disrupted": "mdi:alert"
                 }
             },
-            "next_bus_1_bus_type": {
+            "next_bus_bus_type": {
                 "state": {
                     "sd": "mdi:bus-side",
                     "dd": "mdi:bus-double-decker",
                     "bd": "mdi:bus-side"
                 }
             },
-            "next_bus_2_bus_type": {
-                "state": {
-                    "sd": "mdi:bus-side",
-                    "dd": "mdi:bus-double-decker",
-                    "bd": "mdi:bus-side"
-                }
-            },
-            "next_bus_3_bus_type": {
-                "state": {
-                    "sd": "mdi:bus-side",
-                    "dd": "mdi:bus-double-decker",
-                    "bd": "mdi:bus-side"
-                }
-            },
-            "next_bus_1_load": {
+            "next_bus_load": {
                 "state": {
                     "sea": "mdi:seat-passenger",
                     "sda": "mdi:human-male",
                     "lsd": "mdi:human-queue"
                 }
             },
-            "next_bus_2_load": {
-                "state": {
-                    "sea": "mdi:seat-passenger",
-                    "sda": "mdi:human-male",
-                    "lsd": "mdi:human-queue"
-                }
-            },
-            "next_bus_3_load": {
-                "state": {
-                    "sea": "mdi:seat-passenger",
-                    "sda": "mdi:human-male",
-                    "lsd": "mdi:human-queue"
-                }
-            },
-            "next_bus_1_feature": {
-                "default": "mdi:cancel",
-                "state": {
-                    "wab": "mdi:wheelchair"
-                }
-            },
-            "next_bus_2_feature": {
-                "default": "mdi:cancel",
-                "state": {
-                    "wab": "mdi:wheelchair"
-                }
-            },
-            "next_bus_3_feature": {
+            "next_bus_feature": {
                 "default": "mdi:cancel",
                 "state": {
                     "wab": "mdi:wheelchair"

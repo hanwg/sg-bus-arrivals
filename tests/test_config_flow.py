@@ -2,16 +2,16 @@
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
+from custom_components.sg_bus_arrivals.api import ApiAuthenticationError
 from custom_components.sg_bus_arrivals.const import DOMAIN, MIN_SCAN_INTERVAL_SECONDS
 
 from homeassistant.config_entries import SOURCE_USER
 from homeassistant.const import CONF_API_KEY, CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed
 
 
 @patch(
-    "custom_components.sg_bus_arrivals.api.SgBusArrivalsService.authenticate",
+    "custom_components.sg_bus_arrivals.api.SgBusArrivals.authenticate",
     new_callable=AsyncMock,
 )
 async def test_user_flow_fail_authenticate(
@@ -19,7 +19,7 @@ async def test_user_flow_fail_authenticate(
 ) -> None:
     """Test user flow - authentication failed."""
 
-    mock.side_effect = ConfigEntryAuthFailed()
+    mock.side_effect = ApiAuthenticationError()
 
     result = await hass.config_entries.flow.async_init(
         DOMAIN,
