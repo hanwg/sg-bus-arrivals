@@ -31,7 +31,7 @@ from .coordinator import (
     SgBusArrivalsData,
     TrainServiceAlertsUpdateCoordinator,
 )
-from .models import BusArrival, TrainServiceAlert
+from .models import BusArrival, NextBus, TrainServiceAlert
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -271,9 +271,16 @@ class BusArrivalSensor(CoordinatorEntity[BusArrivalsUpdateCoordinator], SensorEn
     @property
     def native_value(self) -> int:
         """Return the state of the entity."""
-        bus_arrival: BusArrival = self.coordinator.data[self._bus_stop_code][
-            self._service_no
-        ]
+        bus_arrival: BusArrival = (
+            self.coordinator.data[self._bus_stop_code][self._service_no]
+            if self._bus_stop_code
+            in self.coordinator.data[self._bus_stop_code][self._service_no]
+            else BusArrival(
+                self._bus_stop_code,
+                self._service_no,
+                [NextBus(None, None, None, None) for i in range(1, 4)],
+            )
+        )
         return self.entity_description.value_fn(
             self.entity_description.cardinality, bus_arrival
         )
