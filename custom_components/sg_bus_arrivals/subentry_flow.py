@@ -20,7 +20,11 @@ from .const import (
     SUBENTRY_SERVICE_NO,
     SUBENTRY_TYPE_TRAIN_SERVICE_ALERTS,
 )
-from .coordinator import BusArrivalsUpdateCoordinator, SgBusArrivalsConfigEntry
+from .coordinator import (
+    BusArrivalsUpdateCoordinator,
+    SgBusArrivalsConfigEntry,
+    SgBusArrivalsData,
+)
 from .models import BusStop
 
 _LOGGER = logging.getLogger(__name__)
@@ -66,8 +70,9 @@ class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
         Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
         """
         config_entry: SgBusArrivalsConfigEntry = self._get_entry()
-        service: SgBusArrivals = config_entry.runtime_data
-        bus_stop: BusStop = await service.get_bus_stop(data)
+        sg_bus_arrivals_data: SgBusArrivalsData = config_entry.runtime_data
+        sg_bus_arrivals: SgBusArrivals = sg_bus_arrivals_data.api
+        bus_stop: BusStop = await sg_bus_arrivals.get_bus_stop(data)
 
         if bus_stop is None:
             errors["base"] = "invalid_bus_stop_code"

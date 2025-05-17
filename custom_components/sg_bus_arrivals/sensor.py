@@ -11,7 +11,6 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.components.sensor.const import SensorStateClass, UnitOfTime
 from homeassistant.config_entries import ConfigSubentry
-from homeassistant.const import CONF_SCAN_INTERVAL
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
@@ -27,6 +26,7 @@ from .const import (
 )
 from .coordinator import (
     BusArrivalsUpdateCoordinator,
+    SgBusArrivalsData,
     TrainServiceAlertsUpdateCoordinator,
 )
 from .entity import BusArrivalEntity, TrainServiceAlertEntity
@@ -43,14 +43,18 @@ async def async_setup_entry(
     """Add sensors for passed config_entry in HA."""
 
     # retrieve our api instance
-    service: SgBusArrivals = config_entry.runtime_data
-    scan_interval: int = config_entry.data[CONF_SCAN_INTERVAL]
-    bus_arrival_coordinator: BusArrivalsUpdateCoordinator = BusArrivalsUpdateCoordinator(
-        hass, config_entry, service, scan_interval
+    sg_bus_arrivals_data: SgBusArrivalsData = config_entry.runtime_data
+    sg_bus_arrivals: SgBusArrivals = sg_bus_arrivals_data.api
+    bus_arrival_coordinator: BusArrivalsUpdateCoordinator = (
+        sg_bus_arrivals_data.bus_arrivals_coordinator
+    )
+    train_service_alerts_coordinator: TrainServiceAlertsUpdateCoordinator = (
+        sg_bus_arrivals_data.train_service_alerts_coordinator
     )
 
     # Fetch initial data so we have data when entities subscribe
     await bus_arrival_coordinator.async_refresh()
+    await train_service_alerts_coordinator.async_refresh()
 
     for subentry in config_entry.subentries.values():
         if subentry.subentry_type == SUBENTRY_TYPE_BUS_SERVICE:
@@ -71,19 +75,12 @@ async def async_setup_entry(
             )
 
         else:
-            train_service_alerts_coordinator: TrainServiceAlertsUpdateCoordinator = (
-                TrainServiceAlertsUpdateCoordinator(
-                    hass, config_entry, service, scan_interval
-                )
-            )
-            await train_service_alerts_coordinator.async_refresh()
-
             sensors: list[TrainServiceAlertSensor] = [
                 TrainServiceAlertSensor(
                     train_service_alerts_coordinator, subentry, sensor_description
                 )
                 for sensor_description in _get_train_service_alerts_sensor_descriptions(
-                    service
+                    sg_bus_arrivals
                 )
             ]
 

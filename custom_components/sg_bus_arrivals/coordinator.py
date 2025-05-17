@@ -30,11 +30,11 @@ class SgBusArrivalsData:
     """SgBusArrivals data class."""
 
     api: SgBusArrivals
-    train_service_alerts_coordinator: TrainServiceAlertsUpdateCoordinator
     bus_arrivals_coordinator: BusArrivalsUpdateCoordinator
+    train_service_alerts_coordinator: TrainServiceAlertsUpdateCoordinator
 
 
-type SgBusArrivalsConfigEntry = ConfigEntry[SgBusArrivals]
+type SgBusArrivalsConfigEntry = ConfigEntry[SgBusArrivalsData]
 
 
 class TrainServiceAlertsUpdateCoordinator(

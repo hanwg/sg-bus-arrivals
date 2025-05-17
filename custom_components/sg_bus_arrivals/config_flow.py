@@ -32,6 +32,7 @@ from .const import (
     SUBENTRY_TYPE_BUS_SERVICE,
     SUBENTRY_TYPE_TRAIN_SERVICE_ALERTS,
 )
+from .coordinator import SgBusArrivalsData
 from .subentry_flow import (
     BusServiceSubEntryFlowHandler,
     TrainServiceAlertsSubEntryFlowHandler,
@@ -121,14 +122,15 @@ class SgBusArrivalsConfigFlow(ConfigFlow, domain=DOMAIN):
     async def validate_api(self, data: dict[str, Any], errors: dict[str, str]) -> None:
         """Validate the user input allows us to connect to the API."""
 
-        service: SgBusArrivals = None
+        sg_bus_arrivals_data: SgBusArrivalsData = None
         config_entries: list[ConfigEntry[SgBusArrivals]] = self._async_current_entries()
         if config_entries:
-            service = config_entries[0].runtime_data
+            sg_bus_arrivals_data = config_entries[0].runtime_data
         else:
             session: ClientSession = async_get_clientsession(self.hass)
-            service = SgBusArrivals(session, data[CONF_API_KEY])
+            sg_bus_arrivals_data = SgBusArrivals(session, data[CONF_API_KEY])
 
+        service: SgBusArrivals = sg_bus_arrivals_data.api
         try:
             await service.authenticate()
         except ApiAuthenticationError:
