@@ -122,7 +122,8 @@ class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
                 unique_id=f"{self.bus_stop_code}_{user_input[SUBENTRY_CONF_SERVICE_NO]}",
             )
 
-        coordinator: BusArrivalsUpdateCoordinator = config_entry.runtime_data
+        sg_bus_arrivals_data: SgBusArrivalsData = config_entry.runtime_data
+        coordinator: BusArrivalsUpdateCoordinator = sg_bus_arrivals_data.bus_arrivals_coordinator
         bus_services: list[str] = await coordinator.get_bus_services(self.bus_stop_code)
 
         return self.async_show_form(
