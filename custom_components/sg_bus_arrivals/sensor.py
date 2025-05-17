@@ -1,8 +1,9 @@
 """Platform for sensor integration."""
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 import logging
+from typing import Any
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -14,6 +15,7 @@ from homeassistant.config_entries import ConfigSubentry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import SgBusArrivalsConfigEntry
 from .api import SgBusArrivals
@@ -29,7 +31,6 @@ from .coordinator import (
     SgBusArrivalsData,
     TrainServiceAlertsUpdateCoordinator,
 )
-from .entity import BusArrivalEntity, TrainServiceAlertEntity
 from .models import BusArrival, TrainServiceAlert
 
 _LOGGER = logging.getLogger(__name__)
@@ -119,7 +120,7 @@ def _get_train_service_alerts_sensor_descriptions(
             key=f"train_service_alerts_{line}",
             line=line,
             device_class=SensorDeviceClass.ENUM,
-            value_fn=lambda line, alerts: alerts[line].status,
+            value_fn=lambda line, alerts: alerts[line],
             translation_key=f"train_service_alerts_{line}",
         )
         for line in lines
@@ -186,7 +187,9 @@ def _get_sensor_descriptions() -> list[SgBusArrivalsSensorDescription]:
 SENSOR_DESCRIPTIONS: list[SgBusArrivalsSensorDescription] = _get_sensor_descriptions()
 
 
-class TrainServiceAlertSensor(TrainServiceAlertEntity, SensorEntity):
+class TrainServiceAlertSensor(
+    CoordinatorEntity[TrainServiceAlertsUpdateCoordinator], SensorEntity
+):
     """Sensor tracking train service alerts."""
 
     _attr_has_entity_name = True
@@ -198,7 +201,7 @@ class TrainServiceAlertSensor(TrainServiceAlertEntity, SensorEntity):
         entity_description: TrainServiceAlertSensorDescription,
     ) -> None:
         """Initialize the sensor."""
-        super().__init__(entity_description.line, coordinator)
+        super().__init__(coordinator)
         self.entity_description = entity_description
         self._attr_unique_id = f"train_service_alert_{entity_description.line}"
         self.entity_id = (
@@ -211,15 +214,26 @@ class TrainServiceAlertSensor(TrainServiceAlertEntity, SensorEntity):
             identifiers={(DOMAIN, subentry.subentry_id)},
         )
 
-    @property
-    def native_value(self) -> str:
-        """Return the state of the entity."""
+    def _get_data(self):
         line: str = self.entity_description.line
         alerts: dict[str, TrainServiceAlert] = self.coordinator.data
         return self.entity_description.value_fn(line, alerts)
 
+    @property
+    def extra_state_attributes(self) -> Mapping[str, Any]:
+        """Return the extra state attributes."""
 
-class BusArrivalSensor(BusArrivalEntity, SensorEntity):
+        attrs: Mapping[str, Any] = {}
+        attrs["messages"] = self._get_data().messages
+        return attrs
+
+    @property
+    def native_value(self) -> str:
+        """Return the state of the entity."""
+        return self._get_data().status
+
+
+class BusArrivalSensor(CoordinatorEntity[BusArrivalsUpdateCoordinator], SensorEntity):
     """Sensor tracking the number of minutes till bus arrival."""
 
     _attr_has_entity_name = True
@@ -254,18 +268,12 @@ class BusArrivalSensor(BusArrivalEntity, SensorEntity):
             },
         )
 
-    def _get_data(self, bus_stop_code: str, service_no: str) -> BusArrival:
-        if service_no in self.coordinator.data[bus_stop_code]:
-            return self.coordinator.data[bus_stop_code][service_no]
-
-        return BusArrival(
-            bus_stop_code=bus_stop_code, service_no=service_no, next_bus=[]
-        )
-
     @property
     def native_value(self) -> int:
         """Return the state of the entity."""
-        bus_arrival: BusArrival = self._get_data(self._bus_stop_code, self._service_no)
+        bus_arrival: BusArrival = self.coordinator.data[self._bus_stop_code][
+            self._service_no
+        ]
         return self.entity_description.value_fn(
             self.entity_description.cardinality, bus_arrival
         )
