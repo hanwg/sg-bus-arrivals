@@ -274,7 +274,7 @@ class BusArrivalSensor(CoordinatorEntity[BusArrivalsUpdateCoordinator], SensorEn
         bus_arrival: BusArrival = (
             self.coordinator.data[self._bus_stop_code][self._service_no]
             if self._bus_stop_code
-            in self.coordinator.data
+            in self.coordinator.data and self._service_no in self.coordinator.data[self._bus_stop_code]
             else BusArrival(
                 self._bus_stop_code,
                 self._service_no,
