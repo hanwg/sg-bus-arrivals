@@ -3,7 +3,12 @@
 ![sg bus arrivals logo](images/icon-128x128.png)
 
 A custom integration for [Home Assistant](https://www.home-assistant.io/).
-This integration uses the [LTA DataMall API](https://datamall.lta.gov.sg/content/datamall/en/dynamic-data.html) to fetch bus arrival times for all public bus services operating in Singapore.
+This integration uses the [LTA DataMall API](https://datamall.lta.gov.sg/content/datamall/en/dynamic-data.html) to fetch Singapore public transport information.
+
+## Features
+
+- Configure bus stops and bus services to expose sensors for tracking bus arrival times.
+- Train service alerts are exposed as sensors to track train service disruptions. Each train line has it's own sensor for fine-gain control.
 
 ## Installation
 
@@ -69,6 +74,20 @@ Selecting any of the service will display the details of the bus arrivals expose
 
 🎉 Congratulations! You have successfully added a new service to track bus arrivals. You can add more bus services if you like or read on for more details about the integration.
 
+## Add train service alerts
+
+Go to **Settings** > **Devices & services** > **SG Bus Arrivals**.
+
+Click on the "..." icon on the right of the **LTA DataMall API** entry and select **Add train service alerts**.
+You should see a new **Train Service Alerts** subentry with a single service.
+
+Click on the service to view all train service alert sensors:
+![train service alerts](images/train-service-alerts.png)
+
+Each train service alert sensor has either of the following states:
+- `Normal` - Train service is operating as usual.
+- `Disrupted` - Train service is delayed or trains are not available.
+
 ## Use cases
 
 This section discusses some examples on how you can use this integration.
@@ -88,32 +107,42 @@ Add a widget to your home screen to quickly peek at the next bus arrival:
 
 ### Automation: Send bus arrival notification when leaving home
 
-This automation sends a notification with the bus arrivals to your home assistant companion mobile app when you leave the house.
+This example automation sends a notification with the bus arrivals to your home assistant companion mobile app when you leave the house (i.e. disconnected from the home WiFi).
+The notification is automatically dismissed after the timeout (120 seconds in this example) expires.
 
-**Triggers**<br/>
-The following trigger monitors the WiFi state of your phone using sensors from your home assistant companion mobile app. The trigger activates when you are disconnected from the given WiFi SSID (i.e. you left the house). Update `your_device` and `your_wifi_ssid` accordingly.
-```
-trigger: state
-entity_id:
-  - sensor.<your_device>_wifi_connection
-from: <your_wifi_ssid>
-```
+Update `your_device` and `your_wifi_ssid` accordingly.
 
-**Actions**<br/>
-The following action sends a notification to your home assistant companion mobile app. The notification is automatically dismissed after the timeout (120 seconds in this example) expires. Update `your_device`, `bus_stop_code` and `service_no` accordingly.
-```
-action: notify.mobile_app_<your_device>
-data:
-    title: Bus Arrivals
-    message: >-
-        {{ states('sensor.sgbusarrivals_<bus_stop_code>_<service_no>') }}
+automation.yaml:
+```yaml
+alias: "Away: Get bus arrivals"
+description: ""
+triggers:
+  - trigger: state
+    entity_id:
+      - sensor.<your_device>_wifi_connection
+    id: Away
+    from: <your_wifi_ssid>
+conditions: []
+actions:
+  - action: notify.mobile_app_<your_device>
+    metadata: {}
     data:
+      title: Bus Arrivals
+      message: >-
+        Bus 145: {{
+        states('sensor.sgbusarrivals_01029_145_next_bus_1_estimated_arrival')
+        }} / {{
+        states('sensor.sgbusarrivals_01029_145_next_bus_2_estimated_arrival')
+        }} / {{
+        states('sensor.sgbusarrivals_01029_145_next_bus_3_estimated_arrival')
+        }}
+      data:
         tag: bus arrivals
         channel: Bus arrivals
         timeout: 120
         alert_once: true
+mode: single
 ```
-
 ## Supported functionality
 
 ### Sensors
@@ -142,8 +171,22 @@ data: {}
 
 ## Sensor naming and IDs
 
+### Bus arrival sensors
+
 Sensor entity IDs have the following naming convention: `sensor.sgbusarrivals_<bus_stop_code>_<service_no>_next_bus_<arrival>_<sensor>`<br/>
 For example, for the 1st bus arrival for bus service number 145 at bus stop code 01029, the sensor entity id will be: `sensor.sgbusarrivals_01029_145_next_bus_1_estimated_arrival`
+
+The available sensors are:
+| Sensor            | Description                                                           |
+|-------------------|-----------------------------------------------------------------------|
+| estimated_arrival | The estimated number of minutes before the bus arrives.               |
+| bus_type          | Bus type: `Single Deck`, `Double Deck` or `Bendy`                     |
+| load              | Bus load: `Seats Available`, `Standing Available`, `Limited Standing` |
+| feature           | Bus feature: `Wheel-chair accessible`                                 |
+
+### Train service alerts sensors
+
+Sensor entity IDs have the following naming convention: `sensor.sgbusarrivals_train_service_alert_<line>`
 
 ## Reconfiguration
 
@@ -156,7 +199,9 @@ ALL related services and sensors will also be deleted.
 
 ## FAQS
 
-**How is the data fetched?**
+### How is the data fetched?
+
+#### Bus arrivals
 
 The **Scan interval** (default: 20 seconds) is configured during the integration setup.
 This configures the frequency which the integration will poll from the LTA DataMall APIs to fetch the data.
@@ -168,3 +213,6 @@ API call every 20 seconds.
 
 Example 2:
 You added 3 bus services, all of them operating on different bus stops - The integration makes **3** API calls every 20 seconds.
+
+#### Train service alerts
+The data is fetched at a fixed interval of 10 minutes.
