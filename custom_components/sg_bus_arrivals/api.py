@@ -50,7 +50,7 @@ class SgBusArrivals:
             if response.status == 401:
                 raise ApiAuthenticationError
 
-            raise ApiGeneralError(response.status)
+            raise ApiGeneralError(endpoint, response.status)
 
     async def authenticate(self) -> None:
         """Verify the account key by making an API call."""
@@ -218,9 +218,9 @@ class SgBusArrivals:
 class ApiGeneralError(Exception):
     """Error to indicate api failed."""
 
-    def __init__(self, http_status: int) -> None:
+    def __init__(self, endpoint: str, http_status: int) -> None:
         """Initialize with the given status code."""
-        super().__init__(f"LTA DataMall API call failed with status code {http_status}")
+        super().__init__(f"LTA DataMall API call failed. Endpoint: {endpoint}, Status: {http_status}")
         self.http_status = http_status
 
 

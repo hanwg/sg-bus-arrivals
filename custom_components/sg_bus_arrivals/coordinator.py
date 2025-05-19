@@ -51,7 +51,7 @@ class TrainServiceAlertsUpdateCoordinator(
             _LOGGER,
             name="Train service alerts",
             config_entry=config_entry,
-            update_interval=timedelta(seconds=scan_interval),
+            update_interval=timedelta(seconds=600),
             always_update=True,
         )
         self._sg_bus_arrivals = sg_bus_arrivals

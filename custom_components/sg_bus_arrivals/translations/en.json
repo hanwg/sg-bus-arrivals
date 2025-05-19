@@ -52,8 +52,8 @@
             "initiate_flow": {
                 "user": "Add train service alerts"
             },
-            "step": {
-                "user": {}
+            "abort": {
+                "already_configured": "Train service alerts are already configured"
             }
         },
         "bus_service": {
