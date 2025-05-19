@@ -78,7 +78,11 @@
                     "disrupted": "mdi:alert"
                 }
             },
+            "next_bus_estimated_arrival": {
+                "default": "mdi:bus-clock"
+            },
             "next_bus_bus_type": {
+                "default": "mdi:bus-alert",
                 "state": {
                     "sd": "mdi:bus-side",
                     "dd": "mdi:bus-double-decker",
@@ -86,6 +90,7 @@
                 }
             },
             "next_bus_load": {
+                "default": "mdi:bus-alert",
                 "state": {
                     "sea": "mdi:seat-passenger",
                     "sda": "mdi:human-male",
@@ -93,9 +98,10 @@
                 }
             },
             "next_bus_feature": {
-                "default": "mdi:cancel",
+                "default": "mdi:bus-alert",
                 "state": {
-                    "wab": "mdi:wheelchair"
+                    "wab": "mdi:wheelchair",
+                    "none": "mdi:cancel"
                 }
             }
         }

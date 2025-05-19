@@ -18,7 +18,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import SgBusArrivalsConfigEntry
-from .api import SgBusArrivals
+from .api import BUS_ARRIVALS_COUNT, SgBusArrivals
 from .const import (
     DOMAIN,
     SUBENTRY_CONF_BUS_STOP_CODE,
@@ -129,7 +129,7 @@ def _get_train_service_alerts_sensor_descriptions(
 
 def _get_sensor_descriptions() -> list[SgBusArrivalsSensorDescription]:
     sensor_descriptions = []
-    for i in range(1, 4):
+    for i in range(1, BUS_ARRIVALS_COUNT + 1):
         sensor_descriptions.append(
             SgBusArrivalsSensorDescription(
                 cardinality=i,
@@ -137,7 +137,6 @@ def _get_sensor_descriptions() -> list[SgBusArrivalsSensorDescription]:
                 native_unit_of_measurement=UnitOfTime.MINUTES,
                 device_class=SensorDeviceClass.DURATION,
                 state_class=SensorStateClass.MEASUREMENT,
-                icon="mdi:bus-clock",
                 value_fn=lambda cardinality, bus_arrival: bus_arrival.next_bus[
                     cardinality - 1
                 ].estimated_arrival_minutes,
@@ -278,7 +277,7 @@ class BusArrivalSensor(CoordinatorEntity[BusArrivalsUpdateCoordinator], SensorEn
             else BusArrival(
                 self._bus_stop_code,
                 self._service_no,
-                [NextBus(None, None, None, None) for i in range(1, 4)],
+                [NextBus(None, None, None, None) for i in range(1, BUS_ARRIVALS_COUNT + 1)],
             )
         )
         return self.entity_description.value_fn(

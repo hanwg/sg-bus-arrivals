@@ -11,8 +11,9 @@ from .models import BusArrival, BusStop, NextBus, TrainServiceAlert
 
 _LOGGER = logging.getLogger(__name__)
 
-API_BASE_URL = "https://datamall2.mytransport.sg/ltaodataservice"
-MAX_PAGES = 100
+API_BASE_URL: str = "https://datamall2.mytransport.sg/ltaodataservice"
+MAX_PAGES: int = 100
+BUS_ARRIVALS_COUNT: int = 3
 
 
 # https://datamall.lta.gov.sg/content/dam/datamall/datasets/LTA_DataMall_API_User_Guide.pdf
@@ -146,7 +147,9 @@ class SgBusArrivals:
                             bus_arrival[index]["EstimatedArrival"]
                         ),
                         bus_arrival[index]["Type"].lower(),
-                        bus_arrival[index]["Feature"].lower(),
+                        bus_arrival[index]["Feature"].lower()
+                        if bus_arrival[index]["Feature"] == ""
+                        else "none",
                         bus_arrival[index]["Load"].lower(),
                     )
                     for index in [
@@ -220,7 +223,9 @@ class ApiGeneralError(Exception):
 
     def __init__(self, endpoint: str, http_status: int) -> None:
         """Initialize with the given status code."""
-        super().__init__(f"LTA DataMall API call failed. Endpoint: {endpoint}, Status: {http_status}")
+        super().__init__(
+            f"LTA DataMall API call failed. Endpoint: {endpoint}, Status: {http_status}"
+        )
         self.http_status = http_status
 
 
