@@ -3,12 +3,12 @@
 ![sg bus arrivals logo](images/icon-128x128.png)
 
 A custom integration for [Home Assistant](https://www.home-assistant.io/).
-This integration uses the [LTA DataMall API](https://datamall.lta.gov.sg/content/datamall/en/dynamic-data.html) to fetch Singapore public transport information.
+This integration uses the [LTA DataMall API](https://datamall.lta.gov.sg/content/datamall/en/dynamic-data.html) to fetch bus arrivals and train service alerts for the Singapore public transport.
 
 ## Features
 
-- Configure bus stops and bus services to expose sensors for tracking bus arrival times.
-- Train service alerts are exposed as sensors to track train service disruptions. Each train line has it's own sensor for fine-gain control.
+- **Bus Arrival Tracking** - Configure bus stops and bus services to create sensors for displaying bus arrival information.
+- **Train Service Alerts** - Stay informed about train disruptions with dedicated sensors for each train line, offering granular control over which alerts to monitor.
 
 ## Installation
 
@@ -55,7 +55,7 @@ Click on the "..." icon on the right of the **LTA DataMall API** entry and selec
 You will first be prompted to specify the bus stop code:<br/>
 ![bus stop code](images/bus-stop-code.png)
 
-- **Bus stop code**: The unique 5-digit bus stop code. Use the [LTA Transport Tools (Bus Services)](https://www.lta.gov.sg/content/ltagov/en/map/bus.html) to search for your bus stops and bus services.
+- **Bus stop code**: The unique 5-digit bus stop code. Use the [LTA Transport Tools (Bus Services)](https://www.lta.gov.sg/content/ltagov/en/map/bus.html) to search for your bus stops and bus services. You can also find bus stop codes at physical bus stop signs and bus guides at bus stops.
 
 The integration will then fetch all the available bus services at that bus stop. Next, you will need to specify the bus service number:<br/>
 ![service number](images/service-no.png)
@@ -66,13 +66,13 @@ After adding a bus service, you should be able to see a new subentry:<br/>
 
 ### Subentry details
 
-Each subentry contains 3 services which corresponds to the 3 bus arrivals:
+Each subentry contains services which corresponds to the next bus arrivals:
 ![](images/services.png)
 
-Selecting any of the service will display the details of the bus arrivals exposed as sensors:
+Selecting any of the service will display the details of the bus arrival sensors:
 ![sensors](images/sensors.png)
 
-🎉 Congratulations! You have successfully added a new service to track bus arrivals. You can add more bus services if you like or read on for more details about the integration.
+🎉 Congratulations! You have successfully added a new service to track bus arrivals. You can add more bus services if you like or read on to explore further.
 
 ## Add train service alerts
 
@@ -86,33 +86,31 @@ Click on the service to view all train service alert sensors:
 
 Each train service alert sensor has either of the following states:
 - `Normal` - Train service is operating as usual.
-- `Disrupted` - Train service is delayed or trains are not available.
+- `Disrupted` - Train service is delayed or disrupted.
 
 ## Use cases
 
-This section discusses some examples on how you can use this integration.
+Here are some ways you can use this integration.
 
-### Dashboard
+### Home Assistant Dashboard
 
-Add the sensor to a dashboard to quickly view bus arrival times.
-The folowing is an example from the default dashboard:<br/>
+Add sensors to a dashboard for quick access to bus arrival times.
+The following is an example from the default dashboard:<br/>
 ![dashboard](images/dashboard.png)
 
 ### Home Assistant Companion App (Android) Widget
 
-Add a widget to your home screen to quickly peek at the next bus arrival:
+Add a widget to your home screen to glance at the next bus arrival:
 1. Add an Home Assistant entity widget to your home screen.
-2. Specify the estimated arrival sensor entity ID. e.g. `sensor.sgbusarrivals_01029_145_next_bus_1_estimated_arrival`
+2. Specify the estimated arrival sensor entity ID. e.g. `sensor.sgbusarrivals_01029_145_next_bus_estimated_arrivals`
 3. Tap on the widget to refresh the sensor display value.
 
 ### Automation: Send bus arrival notification when leaving home
 
-This example automation sends a notification with the bus arrivals to your home assistant companion mobile app when you leave the house (i.e. disconnected from the home WiFi).
-The notification is automatically dismissed after the timeout (120 seconds in this example) expires.
+This automation sends a notification with the bus arrivals to your Home Assistant companion mobile app when you leave your home WiFi network.
+The notification is automatically dismissed after 120 seconds.
 
-Update `your_device` and `your_wifi_ssid` accordingly.
-
-automation.yaml:
+automation.yaml (Replace `your_device` and `your_wifi_ssid` accordingly):
 ```yaml
 alias: "Away: Get bus arrivals"
 description: ""
@@ -129,13 +127,7 @@ actions:
     data:
       title: Bus Arrivals
       message: >-
-        Bus 145: {{
-        states('sensor.sgbusarrivals_01029_145_next_bus_1_estimated_arrival')
-        }} / {{
-        states('sensor.sgbusarrivals_01029_145_next_bus_2_estimated_arrival')
-        }} / {{
-        states('sensor.sgbusarrivals_01029_145_next_bus_3_estimated_arrival')
-        }}
+        Bus 145: {{ states('sensor.sgbusarrivals_01029_145_next_bus_estimated_arrivals') }}
       data:
         tag: bus arrivals
         channel: Bus arrivals
@@ -143,35 +135,40 @@ actions:
         alert_once: true
 mode: single
 ```
-## Supported functionality
 
-### Sensors
+### Automation: Send notification when there is a train service disruption on EWL
+
+This automation sends a notification to your Home Assistant companion mobile app when there is a train service disruption on the East-West Line (EWL).
+
+automation.yaml (Replace `your_device` accordingly):
+```yaml
+description: "Send notification when EWL is disrupted"
+mode: single
+triggers:
+  - trigger: state
+    entity_id:
+      - sensor.sgbusarrivals_train_service_alert_ewl
+    to: Disrupted
+conditions: []
+actions:
+  - action: notify.mobile_app_<your_device>
+    metadata: {}
+    data:
+      message: Train service disruption at EWL
+
+```
+
+## Sensors
+
+### Bus arrival sensors
 
 The bus arrival sensors are created via the [Add new bus service](#add-new-bus-service) setup. The estimated arrival sensor has the following properties:
 - The sensor shows the **estimated** (as per LTA DataMall API) next bus arrival in minutes.
 - The sensor has a precision of up to **1 minute** (as per LTA DataMall API).
-- If the sensor shows `0`, it means the bus is arriving soon, is already at the bus stop or has just left the bus stop.
+- A sensor state of `0` indicates that the bus is arriving soon, is already at the bus stop or has just left the bus stop.
 - If there are no more bus arrivals (e.g. last bus already departed), the sensor will show `Unknown`. If there was an error fetching the arrival time, the sensor will show `Unavailable`.
 
-
-## Actions
-
-The integration provides the following actions.
-
-#### Action: Refresh bus arrivals
-
-The `sg_bus_arrivals.refresh_bus_arrivals` action initiates a fetch using the LTA DataMall API to update all of the integration's sensors.
-
-YAML:
-```
-action: sg_bus_arrivals.refresh_bus_arrivals
-metadata: {}
-data: {}
-```
-
-## Sensor naming and IDs
-
-### Bus arrival sensors
+#### Sensor naming and IDs
 
 Sensor entity IDs have the following naming convention: `sensor.sgbusarrivals_<bus_stop_code>_<service_no>_next_bus_<arrival>_<sensor>`<br/>
 For example, for the 1st bus arrival for bus service number 145 at bus stop code 01029, the sensor entity id will be: `sensor.sgbusarrivals_01029_145_next_bus_1_estimated_arrival`
@@ -187,6 +184,21 @@ The available sensors are:
 ### Train service alerts sensors
 
 Sensor entity IDs have the following naming convention: `sensor.sgbusarrivals_train_service_alert_<line>`
+
+## Actions
+
+The integration provides the following actions.
+
+#### Action: Refresh bus arrivals
+
+The `sg_bus_arrivals.refresh_bus_arrivals` action initiates a fetch using the LTA DataMall API to update all bus arrival sensors.
+
+YAML:
+```
+action: sg_bus_arrivals.refresh_bus_arrivals
+metadata: {}
+data: {}
+```
 
 ## Reconfiguration
 

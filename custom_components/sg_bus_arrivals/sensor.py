@@ -129,6 +129,23 @@ def _get_train_service_alerts_sensor_descriptions(
 
 def _get_sensor_descriptions() -> list[SgBusArrivalsSensorDescription]:
     sensor_descriptions = []
+
+    sensor_descriptions.append(
+        SgBusArrivalsSensorDescription(
+            cardinality=0,
+            key="next_bus_estimated_arrivals",
+            value_fn=lambda cardinality, bus_arrival: " / ".join(
+                [
+                    str(next_bus.estimated_arrival_minutes)
+                    if next_bus.estimated_arrival_minutes
+                    else "-"
+                    for next_bus in bus_arrival.next_bus
+                ]
+            ),
+            translation_key="next_bus_estimated_arrival",
+        )
+    )
+
     for i in range(1, BUS_ARRIVALS_COUNT + 1):
         sensor_descriptions.append(
             SgBusArrivalsSensorDescription(
@@ -272,12 +289,15 @@ class BusArrivalSensor(CoordinatorEntity[BusArrivalsUpdateCoordinator], SensorEn
         """Return the state of the entity."""
         bus_arrival: BusArrival = (
             self.coordinator.data[self._bus_stop_code][self._service_no]
-            if self._bus_stop_code
-            in self.coordinator.data and self._service_no in self.coordinator.data[self._bus_stop_code]
+            if self._bus_stop_code in self.coordinator.data
+            and self._service_no in self.coordinator.data[self._bus_stop_code]
             else BusArrival(
                 self._bus_stop_code,
                 self._service_no,
-                [NextBus(None, None, None, None) for i in range(1, BUS_ARRIVALS_COUNT + 1)],
+                [
+                    NextBus(None, None, None, None)
+                    for i in range(1, BUS_ARRIVALS_COUNT + 1)
+                ],
             )
         )
         return self.entity_description.value_fn(

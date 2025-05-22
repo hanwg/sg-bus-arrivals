@@ -98,6 +98,9 @@
         "train_service_alerts": {
             "name": "Train Service Alerts"
         },
+        "next_bus_0": {
+            "name": "{service_no} @{description} (All arrivals)"
+        },
         "next_bus_1": {
             "name": "{service_no} @{description} (1st arrival)"
         },
