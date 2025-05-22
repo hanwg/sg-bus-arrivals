@@ -219,7 +219,8 @@
             "next_bus_feature": {
                 "name": "Feature",
                 "state": {
-                    "wab": "Wheel-chair accessible"
+                    "wab": "Wheel-chair accessible",
+                    "none": "None"
                 }
             }
         }

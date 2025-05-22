@@ -148,10 +148,12 @@ class SgBusArrivals:
                         ),
                         bus_arrival[index]["Type"].lower(),
                         bus_arrival[index]["Feature"].lower()
-                        if bus_arrival[index]["Feature"] == ""
+                        if bus_arrival[index]["Feature"] != ""
                         else "none",
                         bus_arrival[index]["Load"].lower(),
                     )
+                    if bus_arrival[index]["EstimatedArrival"] != ""
+                    else NextBus(None, None, None, None)
                     for index in [
                         "NextBus",
                         "NextBus2",
@@ -165,9 +167,6 @@ class SgBusArrivals:
     def _compute_arrival_minutes(self, arrival_str: str) -> int:
         """Compute arrival minutes."""
 
-        if arrival_str == "":
-            return None
-
         arrival_datetime: datetime = datetime.fromisoformat(arrival_str)
         now_utc: datetime = datetime.now(UTC)
 
@@ -178,6 +177,22 @@ class SgBusArrivals:
             return 0
 
         return int(minutes)  # rounded down
+
+    def get_bus_types(self) -> list[str]:
+        """Get bus types."""
+        return ["sd", "dd", "bd"]
+
+    def get_features(self) -> list[str]:
+        """Get bus features."""
+        return ["wab", "none"]
+
+    def get_bus_loads(self) -> list[str]:
+        """Get bus loads."""
+        return ["sea", "sda", "lsd"]
+
+    def get_train_statuses(self) -> list[str]:
+        """Get train service statuses."""
+        return ["normal", "disrupted"]
 
     def get_train_lines(self) -> list[str]:
         """Get train service lines."""

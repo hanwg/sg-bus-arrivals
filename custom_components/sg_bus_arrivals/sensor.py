@@ -57,6 +57,8 @@ async def async_setup_entry(
     await bus_arrival_coordinator.async_refresh()
     await train_service_alerts_coordinator.async_refresh()
 
+    bus_sensor_descriptions: list[SgBusArrivalsSensorDescription] = _get_sensor_descriptions(sg_bus_arrivals)
+
     for subentry in config_entry.subentries.values():
         if subentry.subentry_type == SUBENTRY_TYPE_BUS_SERVICE:
             sensors: list[BusArrivalSensor] = [
@@ -68,7 +70,7 @@ async def async_setup_entry(
                     subentry.data[SUBENTRY_CONF_DESCRIPTION],
                     subentry.data[SUBENTRY_CONF_SERVICE_NO],
                 )
-                for sensor_description in SENSOR_DESCRIPTIONS
+                for sensor_description in bus_sensor_descriptions
             ]
 
             async_add_entities(
@@ -112,14 +114,16 @@ class TrainServiceAlertSensorDescription(SensorEntityDescription):
 
 
 def _get_train_service_alerts_sensor_descriptions(
-    service: SgBusArrivals,
+    sg_bus_arrivals: SgBusArrivals,
 ) -> list[TrainServiceAlertSensorDescription]:
-    lines: list[str] = service.get_train_lines()
+    lines: list[str] = sg_bus_arrivals.get_train_lines()
+    train_statuses: list[str] = sg_bus_arrivals.get_train_statuses()
     return [
         TrainServiceAlertSensorDescription(
             key=f"train_service_alerts_{line}",
             line=line,
             device_class=SensorDeviceClass.ENUM,
+            options=train_statuses,
             value_fn=lambda line, alerts: alerts[line],
             translation_key=f"train_service_alerts_{line}",
         )
@@ -127,7 +131,7 @@ def _get_train_service_alerts_sensor_descriptions(
     ]
 
 
-def _get_sensor_descriptions() -> list[SgBusArrivalsSensorDescription]:
+def _get_sensor_descriptions(sg_bus_arrivals: SgBusArrivals) -> list[SgBusArrivalsSensorDescription]:
     sensor_descriptions = []
 
     sensor_descriptions.append(
@@ -145,6 +149,10 @@ def _get_sensor_descriptions() -> list[SgBusArrivalsSensorDescription]:
             translation_key="next_bus_estimated_arrival",
         )
     )
+
+    bus_types: list[str] = sg_bus_arrivals.get_bus_types()
+    features: list[str] = sg_bus_arrivals.get_features()
+    bus_loads: list[str] = sg_bus_arrivals.get_bus_loads()
 
     for i in range(1, BUS_ARRIVALS_COUNT + 1):
         sensor_descriptions.append(
@@ -166,6 +174,7 @@ def _get_sensor_descriptions() -> list[SgBusArrivalsSensorDescription]:
                 cardinality=i,
                 key=f"next_bus_{i}_bus_type",
                 device_class=SensorDeviceClass.ENUM,
+                options=bus_types,
                 value_fn=lambda cardinality, bus_arrival: bus_arrival.next_bus[
                     cardinality - 1
                 ].bus_type,
@@ -178,6 +187,7 @@ def _get_sensor_descriptions() -> list[SgBusArrivalsSensorDescription]:
                 cardinality=i,
                 key=f"next_bus_{i}_feature",
                 device_class=SensorDeviceClass.ENUM,
+                options=features,
                 value_fn=lambda cardinality, bus_arrival: bus_arrival.next_bus[
                     cardinality - 1
                 ].feature,
@@ -190,6 +200,7 @@ def _get_sensor_descriptions() -> list[SgBusArrivalsSensorDescription]:
                 cardinality=i,
                 key=f"next_bus_{i}_load",
                 device_class=SensorDeviceClass.ENUM,
+                options=bus_loads,
                 value_fn=lambda cardinality, bus_arrival: bus_arrival.next_bus[
                     cardinality - 1
                 ].load,
@@ -198,9 +209,6 @@ def _get_sensor_descriptions() -> list[SgBusArrivalsSensorDescription]:
         )
 
     return sensor_descriptions
-
-
-SENSOR_DESCRIPTIONS: list[SgBusArrivalsSensorDescription] = _get_sensor_descriptions()
 
 
 class TrainServiceAlertSensor(
