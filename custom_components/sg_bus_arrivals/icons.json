@@ -103,6 +103,9 @@
                     "wab": "mdi:wheelchair",
                     "none": "mdi:cancel"
                 }
+            },
+            "next_bus_operator": {
+                "default": "mdi:domain"
             }
         }
     }

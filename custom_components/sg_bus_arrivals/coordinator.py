@@ -27,7 +27,7 @@ class SgBusArrivalsData:
 
     api: SgBusArrivals
     bus_arrivals_coordinator: BusArrivalsUpdateCoordinator
-    train_service_alerts_coordinator: TrainServiceAlertsUpdateCoordinator
+    train_service_alerts_coordinator: TrainServiceAlertsUpdateCoordinator | None
 
 
 type SgBusArrivalsConfigEntry = ConfigEntry[SgBusArrivalsData]

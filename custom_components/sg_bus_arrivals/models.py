@@ -7,10 +7,10 @@ from dataclasses import dataclass
 class NextBus:
     """Next bus information."""
 
-    estimated_arrival_minutes: int
-    bus_type: str
-    feature: str
-    load: str
+    estimated_arrival_minutes: int | None = None
+    bus_type: str | None = None
+    feature: str | None = None
+    load: str | None = None
 
 
 @dataclass
@@ -19,6 +19,7 @@ class BusArrival:
 
     bus_stop_code: str
     service_no: str
+    operator: str
     next_bus: list[NextBus]
 
 
