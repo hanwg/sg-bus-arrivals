@@ -49,15 +49,18 @@ async def async_setup_entry(
     bus_arrival_coordinator: BusArrivalsUpdateCoordinator = (
         sg_bus_arrivals_data.bus_arrivals_coordinator
     )
-    train_service_alerts_coordinator: TrainServiceAlertsUpdateCoordinator = (
+    train_service_alerts_coordinator: TrainServiceAlertsUpdateCoordinator | None = (
         sg_bus_arrivals_data.train_service_alerts_coordinator
     )
 
     # Fetch initial data so we have data when entities subscribe
     await bus_arrival_coordinator.async_refresh()
-    await train_service_alerts_coordinator.async_refresh()
+    if train_service_alerts_coordinator is not None:
+        await train_service_alerts_coordinator.async_refresh()
 
-    bus_sensor_descriptions: list[SgBusArrivalsSensorDescription] = _get_sensor_descriptions(sg_bus_arrivals)
+    bus_sensor_descriptions: list[SgBusArrivalsSensorDescription] = (
+        _get_sensor_descriptions(sg_bus_arrivals)
+    )
 
     for subentry in config_entry.subentries.values():
         if subentry.subentry_type == SUBENTRY_TYPE_BUS_SERVICE:
@@ -131,7 +134,9 @@ def _get_train_service_alerts_sensor_descriptions(
     ]
 
 
-def _get_sensor_descriptions(sg_bus_arrivals: SgBusArrivals) -> list[SgBusArrivalsSensorDescription]:
+def _get_sensor_descriptions(
+    sg_bus_arrivals: SgBusArrivals,
+) -> list[SgBusArrivalsSensorDescription]:
     sensor_descriptions = []
 
     sensor_descriptions.append(

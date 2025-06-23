@@ -4,14 +4,18 @@ from __future__ import annotations
 
 from aiohttp import ClientSession
 
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, ConfigSubentry
 from homeassistant.const import CONF_API_KEY, CONF_SCAN_INTERVAL, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import ApiAuthenticationError, ApiGeneralError, SgBusArrivals
-from .const import DOMAIN, SERVICE_REFRESH_BUS_ARRIVALS
+from .const import (
+    DOMAIN,
+    SERVICE_REFRESH_BUS_ARRIVALS,
+    SUBENTRY_TYPE_TRAIN_SERVICE_ALERTS,
+)
 from .coordinator import (
     BusArrivalsUpdateCoordinator,
     SgBusArrivalsConfigEntry,
@@ -35,8 +39,15 @@ async def async_setup_entry(
             hass, entry, sg_bus_arrivals, entry.data[CONF_SCAN_INTERVAL]
         )
     )
-    train_service_alerts_coordinator: TrainServiceAlertsUpdateCoordinator = (
-        TrainServiceAlertsUpdateCoordinator(
+    train_service_alerts: list[ConfigSubentry] = [
+        subentry
+        for subentry in entry.subentries.values()
+        if subentry.subentry_type == SUBENTRY_TYPE_TRAIN_SERVICE_ALERTS
+    ]
+    train_service_alerts_coordinator: TrainServiceAlertsUpdateCoordinator | None = (
+        None
+        if len(train_service_alerts) < 1
+        else TrainServiceAlertsUpdateCoordinator(
             hass, entry, sg_bus_arrivals, entry.data[CONF_SCAN_INTERVAL]
         )
     )
