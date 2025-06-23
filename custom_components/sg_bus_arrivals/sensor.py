@@ -104,7 +104,6 @@ class SgBusArrivalsSensorDescription(SensorEntityDescription):
     """Describes the bus arrival sensor entity."""
 
     cardinality: int
-    icon: str
     value_fn: Callable[[int, BusArrival], int | None]
 
 
@@ -139,6 +138,8 @@ def _get_sensor_descriptions(
 ) -> list[SgBusArrivalsSensorDescription]:
     sensor_descriptions = []
 
+    bus_operators: list[str] = sg_bus_arrivals.get_bus_operators()
+
     sensor_descriptions.append(
         SgBusArrivalsSensorDescription(
             cardinality=0,
@@ -152,6 +153,17 @@ def _get_sensor_descriptions(
                 ]
             ),
             translation_key="next_bus_estimated_arrival",
+        )
+    )
+
+    sensor_descriptions.append(
+        SgBusArrivalsSensorDescription(
+            cardinality=0,
+            key="next_bus_operator",
+            device_class=SensorDeviceClass.ENUM,
+            options=bus_operators,
+            value_fn=lambda cardinality, bus_arrival: bus_arrival.operator,
+            translation_key="next_bus_operator",
         )
     )
 
@@ -210,6 +222,17 @@ def _get_sensor_descriptions(
                     cardinality - 1
                 ].load,
                 translation_key="next_bus_load",
+            )
+        )
+
+        sensor_descriptions.append(
+            SgBusArrivalsSensorDescription(
+                cardinality=i,
+                key=f"next_bus_{i}_operator",
+                device_class=SensorDeviceClass.ENUM,
+                options=bus_operators,
+                value_fn=lambda cardinality, bus_arrival: bus_arrival.operator,
+                translation_key="next_bus_operator",
             )
         )
 
@@ -307,10 +330,8 @@ class BusArrivalSensor(CoordinatorEntity[BusArrivalsUpdateCoordinator], SensorEn
             else BusArrival(
                 self._bus_stop_code,
                 self._service_no,
-                [
-                    NextBus(None, None, None, None)
-                    for i in range(1, BUS_ARRIVALS_COUNT + 1)
-                ],
+                "none",
+                [NextBus() for i in range(1, BUS_ARRIVALS_COUNT + 1)],
             )
         )
         return self.entity_description.value_fn(

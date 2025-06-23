@@ -141,6 +141,7 @@ class SgBusArrivals:
             BusArrival(
                 response["BusStopCode"],
                 bus_arrival["ServiceNo"],
+                bus_arrival["Operator"].lower(),
                 [
                     NextBus(
                         self._compute_arrival_minutes(
@@ -153,7 +154,7 @@ class SgBusArrivals:
                         bus_arrival[index]["Load"].lower(),
                     )
                     if bus_arrival[index]["EstimatedArrival"] != ""
-                    else NextBus(None, None, None, None)
+                    else NextBus()
                     for index in [
                         "NextBus",
                         "NextBus2",
@@ -189,6 +190,10 @@ class SgBusArrivals:
     def get_bus_loads(self) -> list[str]:
         """Get bus loads."""
         return ["sea", "sda", "lsd"]
+
+    def get_bus_operators(self) -> list[str]:
+        """Get bus operators."""
+        return ["sbst", "smrt", "tts", "gas", "none"]
 
     def get_train_statuses(self) -> list[str]:
         """Get train service statuses."""

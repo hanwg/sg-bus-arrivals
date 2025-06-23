@@ -222,6 +222,16 @@
                     "wab": "Wheel-chair accessible",
                     "none": "None"
                 }
+            },
+            "next_bus_operator": {
+                "name": "Operator",
+                "state": {
+                    "sbst": "SBS Transit",
+                    "smrt": "SMRT Corporation",
+                    "tts": "Tower Transit Singapore",
+                    "gas": "Go Ahead Singapore",
+                    "none": "None"
+                }
             }
         }
     }
