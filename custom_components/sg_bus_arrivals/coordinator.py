@@ -96,7 +96,7 @@ class BusArrivalsUpdateCoordinator(
     async def get_bus_services(self, bus_stop_code: str) -> set[str]:
         """Fetch all bus services for the specified bus stop."""
         await self._task
-        return self._all_bus_services[bus_stop_code]
+        return self._all_bus_services.get(bus_stop_code, set())
 
     async def _async_update_data(self):
         """Fetch data from API endpoint.

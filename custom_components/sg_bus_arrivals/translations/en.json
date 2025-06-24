@@ -87,10 +87,12 @@
                 }
             },
             "abort": {
-                "already_configured": "This bus service is already configured"
+                "already_configured": "All available bus services for this bus stop are already configured",
+                "subentries_created": "Created configuration for: {service_nos}"
             },
             "error": {
-                "invalid_bus_stop_code": "Invalid bus stop code"
+                "invalid_bus_stop_code": "Invalid bus stop code",
+                "no_service_no_selected": "Please select 1 or more bus services"
             }
         }
     },

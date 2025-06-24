@@ -5,7 +5,11 @@ from typing import Any
 
 import voluptuous as vol
 
-from homeassistant.config_entries import ConfigSubentryFlow, SubentryFlowResult
+from homeassistant.config_entries import (
+    ConfigSubentry,
+    ConfigSubentryFlow,
+    SubentryFlowResult,
+)
 from homeassistant.helpers.selector import (
     SelectSelector,
     SelectSelectorConfig,
@@ -18,6 +22,7 @@ from .const import (
     SUBENTRY_CONF_DESCRIPTION,
     SUBENTRY_CONF_ROAD_NAME,
     SUBENTRY_CONF_SERVICE_NO,
+    SUBENTRY_TYPE_BUS_SERVICE,
     SUBENTRY_TYPE_TRAIN_SERVICE_ALERTS,
 )
 from .coordinator import (
@@ -56,9 +61,10 @@ class TrainServiceAlertsSubEntryFlowHandler(ConfigSubentryFlow):
 class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
     """Handles subentry flow for creating new bus stops."""
 
-    bus_stop_code: str
+    bus_stop_code: list[str]
     road_name: str
     description: str
+    new : bool = True
 
     async def _validate_bus_stop(
         self,
@@ -105,35 +111,66 @@ class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
     ) -> SubentryFlowResult:
         """Prompt user for bus service number."""
         errors: dict[str, str] = {}
-        config_entry: SgBusArrivalsConfigEntry = self._get_entry()
-        if SUBENTRY_CONF_SERVICE_NO in user_input:
-            for existing_subentry in config_entry.subentries.values():
-                if (
-                    existing_subentry.unique_id
-                    == f"{self.bus_stop_code}_{user_input[SUBENTRY_CONF_SERVICE_NO]}"
-                ):
-                    return self.async_abort(reason="already_configured")
 
-            user_input[SUBENTRY_CONF_BUS_STOP_CODE] = self.bus_stop_code
-            user_input[SUBENTRY_CONF_DESCRIPTION] = self.description
-            return self.async_create_entry(
-                title=f"{user_input[SUBENTRY_CONF_SERVICE_NO]} @{self.description}",
-                data=user_input,
-                unique_id=f"{self.bus_stop_code}_{user_input[SUBENTRY_CONF_SERVICE_NO]}",
+        config_entry: SgBusArrivalsConfigEntry = self._get_entry()
+        sg_bus_arrivals_data: SgBusArrivalsData = config_entry.runtime_data
+        coordinator: BusArrivalsUpdateCoordinator = (
+            sg_bus_arrivals_data.bus_arrivals_coordinator
+        )
+
+        existing_service_nos: list[str] = [
+            existing_subentry.data[SUBENTRY_CONF_SERVICE_NO]
+            for existing_subentry in config_entry.subentries.values()
+            if existing_subentry.subentry_type == SUBENTRY_TYPE_BUS_SERVICE
+            and existing_subentry.data[SUBENTRY_CONF_BUS_STOP_CODE]
+            == self.bus_stop_code
+        ]
+
+        bus_services = [
+            service_no
+            for service_no in await coordinator.get_bus_services(self.bus_stop_code)
+            if service_no not in existing_service_nos
+        ]
+
+        if len(bus_services) < 1:
+            return self.async_abort(reason="already_configured")
+
+        if SUBENTRY_CONF_SERVICE_NO in user_input:
+            for service_no in user_input[SUBENTRY_CONF_SERVICE_NO]:
+                self.hass.config_entries.async_add_subentry(
+                    config_entry,
+                    ConfigSubentry(
+                        data={
+                            SUBENTRY_CONF_SERVICE_NO: service_no,
+                            SUBENTRY_CONF_BUS_STOP_CODE: self.bus_stop_code,
+                            SUBENTRY_CONF_DESCRIPTION: self.description,
+                        },
+                        subentry_type=SUBENTRY_TYPE_BUS_SERVICE,
+                        title=f"{service_no} @{self.description}",
+                        unique_id=f"{self.bus_stop_code}_{service_no}",
+                    ),
+                )
+
+            return self.async_abort(
+                reason="subentries_created",
+                description_placeholders={
+                    "service_nos": ", ".join(user_input[SUBENTRY_CONF_SERVICE_NO]),
+                },
             )
 
-        sg_bus_arrivals_data: SgBusArrivalsData = config_entry.runtime_data
-        coordinator: BusArrivalsUpdateCoordinator = sg_bus_arrivals_data.bus_arrivals_coordinator
-        bus_services: list[str] = await coordinator.get_bus_services(self.bus_stop_code)
-
+        if not self.new:
+            errors["base"] = "no_service_no_selected"
+        self.new = False
         return self.async_show_form(
             step_id="service_no",
             data_schema=vol.Schema(
                 {
-                    vol.Required(SUBENTRY_CONF_SERVICE_NO): SelectSelector(
+                    vol.Optional(SUBENTRY_CONF_SERVICE_NO): SelectSelector(
                         SelectSelectorConfig(
-                            options=sorted(bus_services),
-                            mode=SelectSelectorMode.DROPDOWN,
+                            options=bus_services,
+                            mode=SelectSelectorMode.LIST,
+                            multiple=True,
+                            sort=True
                         )
                     )
                 }

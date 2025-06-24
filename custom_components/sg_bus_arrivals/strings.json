@@ -20,10 +20,12 @@
         },
         "error": {
             "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
+            "no_service_no_selected": "Please select 1 or more bus services",
             "unknown": "[%key:common::config_flow::error::unknown%]"
         },
         "abort": {
-            "already_configured": "[%key:common::config_flow::abort::already_configured_device%]",
+            "already_configured": "All available bus services for this bus stop are already configured",
+            "subentries_created": "Created configuration for: {service_nos}",
             "reconfigure_successful": "[%key:common::config_flow::abort::reconfigure_successful%]"
         }
     },

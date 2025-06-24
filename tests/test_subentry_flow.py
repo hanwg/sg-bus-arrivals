@@ -39,7 +39,9 @@ async def test_async_step_init(
     """Test async step init."""
 
     mock_authenticate.return_value = True
-    mock_get_all_bus_services.return_value = []
+    mock_get_all_bus_services.return_value = {
+        "mock_bus_stop_code": ["mock_service_no", "mock_another_service_no"]
+    }
 
     config_entry = MockConfigEntry(
         domain=DOMAIN,
@@ -65,13 +67,13 @@ async def test_async_step_init(
         context={"source": SOURCE_USER},
         data={
             SUBENTRY_CONF_BUS_STOP_CODE: "mock_bus_stop_code",
-            SUBENTRY_CONF_SERVICE_NO: "mock_service_no",
+            SUBENTRY_CONF_SERVICE_NO: ["mock_service_no"],
         },
     )
     await hass.async_block_till_done()
 
     assert mock_get_bus_stop.called
-    assert result["result"]
+    assert result["reason"] == "subentries_created"
 
 
 @patch(
@@ -95,7 +97,7 @@ async def test_async_step_init_fail(
     """Test async step init fail."""
 
     mock_authenticate.return_value = True
-    mock_get_all_bus_services.return_value = []
+    mock_get_all_bus_services.return_value = {}
 
     config_entry = MockConfigEntry(
         domain=DOMAIN,
@@ -154,7 +156,7 @@ async def notest_async_step_init_duplicate(
     bus_stop_code: str = "123"
     service_no: str = "456"
 
-    mock_get_all_bus_services.return_value = []
+    mock_get_all_bus_services.return_value = {}
     mock_get_bus_arrivals.return_value = [
         BusArrival(
             bus_stop_code,
