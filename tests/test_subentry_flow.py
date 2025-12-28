@@ -73,7 +73,7 @@ async def test_async_step_init(
     await hass.async_block_till_done()
 
     assert mock_get_bus_stop.called
-    assert result["reason"] == "subentries_created"
+    assert result.get("reason") == "subentries_created"
 
 
 @patch(
@@ -123,7 +123,7 @@ async def test_async_step_init_fail(
     )
 
     assert mock_get_bus_stop.called
-    assert result["errors"] == {"base": "invalid_bus_stop_code"}
+    assert result.get("errors") == {"base": "invalid_bus_stop_code"}
 
 
 @patch(
@@ -161,6 +161,7 @@ async def notest_async_step_init_duplicate(
         BusArrival(
             bus_stop_code,
             service_no,
+            "mock operator",
             [
                 NextBus(None, None, None, None),
                 NextBus(None, None, None, None),
@@ -186,7 +187,6 @@ async def notest_async_step_init_duplicate(
                     SUBENTRY_CONF_DESCRIPTION: "mock description",
                     SUBENTRY_CONF_SERVICE_NO: service_no,
                 },
-                subentry_id="mock subentry id",
                 subentry_type=SUBENTRY_TYPE_BUS_SERVICE,
                 title="mock subentry",
                 unique_id=f"{bus_stop_code}_{service_no}",
@@ -211,4 +211,4 @@ async def notest_async_step_init_duplicate(
     await hass.async_block_till_done()
 
     assert mock_get_bus_arrivals.called
-    assert result["reason"] == "already_configured"
+    assert result.get("reason") == "already_configured"

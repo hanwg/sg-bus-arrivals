@@ -31,4 +31,4 @@ async def test_user_flow_fail_authenticate(
     )
 
     assert mock.called
-    assert result["errors"] == {"base": "invalid_auth"}
+    assert result.get("errors") == {"base": "invalid_auth"}
