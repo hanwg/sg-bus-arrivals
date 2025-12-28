@@ -229,7 +229,7 @@ class SgBusArrivals:
             messages: list[str] = [
                 message["Content"]
                 for message in all_messages
-                if train_line in message["Content"]
+                if train_line.upper() in message["Content"]
             ]
             alerts[train_line] = TrainServiceAlert(
                 "disrupted" if messages else "normal", messages

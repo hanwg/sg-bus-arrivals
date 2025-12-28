@@ -74,9 +74,7 @@ async def test_authenticate_error(
     assert mock_session.get.called
 
 
-async def test_get_bus_stop(
-    mock_session: MagicMock, service: SgBusArrivals
-) -> None:
+async def test_get_bus_stop(mock_session: MagicMock, service: SgBusArrivals) -> None:
     """Test get bus stop."""
 
     # for entry in os.scandir("tests/fixtures"):
@@ -139,7 +137,9 @@ async def test_compute_arrival_minutes(service: SgBusArrivals) -> None:
     assert result > 0
 
 
-async def test_train_service_alerts(mock_session: MagicMock, service: SgBusArrivals) -> None:
+async def test_train_service_alerts(
+    mock_session: MagicMock, service: SgBusArrivals
+) -> None:
     "Test get train service alerts."
 
     json: str = await load_file("tests/fixtures/train_service_alerts.json")
@@ -152,7 +152,16 @@ async def test_train_service_alerts(mock_session: MagicMock, service: SgBusArriv
     response: dict[str, TrainServiceAlert] = await service.get_train_service_alerts()
 
     assert mock_session.get.called
-    assert "normal" in response["nel"].status
+    assert response["nel"] == TrainServiceAlert(
+        "disrupted",
+        [
+            "1711hrs : NEL - Additional travelling time of 40 minutes between Boon Keng and Dhoby Ghaut stations towards HarbourFront station due to a signal fault. Free bus rides available at designated stops toward HarbourFront station."
+        ],
+    )
+    assert response["ccl"] == TrainServiceAlert(
+        "normal",
+        [],
+    )
 
 
 async def load_file(filename: str) -> Any:
