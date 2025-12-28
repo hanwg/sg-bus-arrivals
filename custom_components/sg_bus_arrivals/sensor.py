@@ -64,7 +64,7 @@ async def async_setup_entry(
 
     for subentry in config_entry.subentries.values():
         if subentry.subentry_type == SUBENTRY_TYPE_BUS_SERVICE:
-            sensors: list[BusArrivalSensor] = [
+            bus_sensors: list[BusArrivalSensor] = [
                 BusArrivalSensor(
                     bus_arrival_coordinator,
                     subentry,
@@ -77,11 +77,12 @@ async def async_setup_entry(
             ]
 
             async_add_entities(
-                sensors, update_before_add=True, config_subentry_id=subentry.subentry_id
+                bus_sensors, update_before_add=True, config_subentry_id=subentry.subentry_id
             )
 
         else:
-            sensors: list[TrainServiceAlertSensor] = [
+            assert train_service_alerts_coordinator is not None
+            train_sensors: list[TrainServiceAlertSensor] = [
                 TrainServiceAlertSensor(
                     train_service_alerts_coordinator, subentry, sensor_description
                 )
@@ -91,7 +92,7 @@ async def async_setup_entry(
             ]
 
             async_add_entities(
-                sensors, update_before_add=True, config_subentry_id=subentry.subentry_id
+                train_sensors, update_before_add=True, config_subentry_id=subentry.subentry_id
             )
 
 

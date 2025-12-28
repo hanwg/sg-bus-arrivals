@@ -112,17 +112,17 @@ class SgBusArrivalsConfigFlow(ConfigFlow, domain=DOMAIN):
                 )
 
         api_key: str = self._get_reconfigure_entry().data[CONF_API_KEY]
-        scan_interval: str = self._get_reconfigure_entry().data[CONF_SCAN_INTERVAL]
+        scan_interval: int = self._get_reconfigure_entry().data[CONF_SCAN_INTERVAL]
         return self.async_show_form(
             step_id="reconfigure",
             data_schema=get_data_schema(api_key, scan_interval),
             errors=errors,
         )
 
-    async def validate_api(self, data: dict[str, Any], errors: dict[str, str]) -> None:
+    async def validate_api(self, data: dict[str, Any], errors: dict[str, str]) -> dict[str, str]:
         """Validate the user input allows us to connect to the API."""
 
-        sg_bus_arrivals: SgBusArrivals = None
+        sg_bus_arrivals: SgBusArrivals | None = None
         config_entries: list[ConfigEntry[SgBusArrivalsData]] = self._async_current_entries()
         if config_entries:
             sg_bus_arrivals_data: SgBusArrivalsData = config_entries[0].runtime_data

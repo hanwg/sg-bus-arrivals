@@ -11,11 +11,7 @@ from custom_components.sg_bus_arrivals.api import (
     ApiGeneralError,
     SgBusArrivals,
 )
-from custom_components.sg_bus_arrivals.models import (
-    BusArrival,
-    BusStop,
-    TrainServiceAlert,
-)
+from custom_components.sg_bus_arrivals.models import BusArrival, TrainServiceAlert
 import pytest
 
 
@@ -93,7 +89,7 @@ async def test_get_bus_stop(
     mock_response.json.return_value = json
     mock_session.get.return_value.__aenter__.return_value = mock_response
 
-    bus_stop: BusStop = await service.get_bus_stop("01012")
+    bus_stop = await service.get_bus_stop("01012")
 
     assert mock_session.get.called
     assert bus_stop is not None
@@ -111,7 +107,7 @@ async def test_get_bus_stop_not_found(
     mock_response.json.return_value = json
     mock_session.get.return_value.__aenter__.return_value = mock_response
 
-    bus_stop: BusStop = await service.get_bus_stop("invalid bus stop code")
+    bus_stop = await service.get_bus_stop("invalid bus stop code")
 
     assert mock_session.get.called
     assert bus_stop is None

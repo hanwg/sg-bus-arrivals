@@ -1,6 +1,7 @@
 """Options flow for the SG Bus Arrivals integration. Handle adding of new bus stop code."""
 
 import logging
+from types import MappingProxyType
 from typing import Any
 
 import voluptuous as vol
@@ -61,16 +62,16 @@ class TrainServiceAlertsSubEntryFlowHandler(ConfigSubentryFlow):
 class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
     """Handles subentry flow for creating new bus stops."""
 
-    bus_stop_code: list[str]
+    bus_stop_code: str
     road_name: str
     description: str
-    new : bool = True
+    new: bool = True
 
     async def _validate_bus_stop(
         self,
         data: str,
         errors: dict[str, str],
-    ) -> BusStop:
+    ) -> BusStop | None:
         """Validate the user input allows us to connect.
 
         Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
@@ -78,7 +79,7 @@ class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
         config_entry: SgBusArrivalsConfigEntry = self._get_entry()
         sg_bus_arrivals_data: SgBusArrivalsData = config_entry.runtime_data
         sg_bus_arrivals: SgBusArrivals = sg_bus_arrivals_data.api
-        bus_stop: BusStop = await sg_bus_arrivals.get_bus_stop(data)
+        bus_stop: BusStop | None = await sg_bus_arrivals.get_bus_stop(data)
 
         if bus_stop is None:
             errors["base"] = "invalid_bus_stop_code"
@@ -91,12 +92,13 @@ class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
         """Prompt user for bus stop code."""
         errors: dict[str, str] = {}
         if user_input is not None:
-            bus_stop: BusStop = await self._validate_bus_stop(
+            bus_stop: BusStop | None = await self._validate_bus_stop(
                 user_input[SUBENTRY_CONF_BUS_STOP_CODE], errors
             )
             _LOGGER.debug("validate_bus_stop, bus_stop: %s", bus_stop)
 
             if not errors:
+                assert bus_stop is not None
                 self.bus_stop_code = bus_stop.bus_stop_code
                 self.road_name = bus_stop.road_name
                 self.description = bus_stop.description
@@ -107,7 +109,7 @@ class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
         )
 
     async def async_step_service_no(
-        self, user_input: dict[str, Any] | None = None
+        self, user_input: dict[str, Any]
     ) -> SubentryFlowResult:
         """Prompt user for bus service number."""
         errors: dict[str, str] = {}
@@ -140,11 +142,13 @@ class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
                 self.hass.config_entries.async_add_subentry(
                     config_entry,
                     ConfigSubentry(
-                        data={
-                            SUBENTRY_CONF_SERVICE_NO: service_no,
-                            SUBENTRY_CONF_BUS_STOP_CODE: self.bus_stop_code,
-                            SUBENTRY_CONF_DESCRIPTION: self.description,
-                        },
+                        data=MappingProxyType(
+                            {
+                                SUBENTRY_CONF_SERVICE_NO: service_no,
+                                SUBENTRY_CONF_BUS_STOP_CODE: self.bus_stop_code,
+                                SUBENTRY_CONF_DESCRIPTION: self.description,
+                            }
+                        ),
                         subentry_type=SUBENTRY_TYPE_BUS_SERVICE,
                         title=f"{service_no} @{self.description}",
                         unique_id=f"{self.bus_stop_code}_{service_no}",
@@ -170,7 +174,7 @@ class BusServiceSubEntryFlowHandler(ConfigSubentryFlow):
                             options=bus_services,
                             mode=SelectSelectorMode.LIST,
                             multiple=True,
-                            sort=True
+                            sort=True,
                         )
                     )
                 }

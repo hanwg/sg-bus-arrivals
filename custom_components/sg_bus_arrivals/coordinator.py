@@ -105,6 +105,7 @@ class BusArrivalsUpdateCoordinator(
         so entities can quickly look up their data.
         """
         bus_stop_codes: set[str] = set()
+        assert self.config_entry is not None
         for subentry in self.config_entry.subentries.values():
             if subentry.subentry_type == SUBENTRY_TYPE_BUS_SERVICE:
                 bus_stop_codes.add(subentry.data[SUBENTRY_CONF_BUS_STOP_CODE])

@@ -60,7 +60,7 @@ class SgBusArrivals:
         # ApiAuthenticationError is thrown if authentication fails
         await self._get_request("/TrainServiceAlerts")
 
-    async def get_bus_stop(self, bus_stop_code: str) -> BusStop:
+    async def get_bus_stop(self, bus_stop_code: str) -> BusStop | None:
         """Get bus stop information by bus stop code."""
 
         page: int = 0
@@ -124,7 +124,7 @@ class SgBusArrivals:
         _LOGGER.info("Get all bus services completed in %f seconds", seconds_elapsed)
         return all_bus_services
 
-    async def get_bus_services(self, bus_stop_code: str) -> list[str]:
+    async def get_bus_services(self, bus_stop_code: str) -> set[str]:
         """Get bus services for the given bus stop."""
 
         all_bus_services: dict[str, set[str]] = await self.get_all_bus_services()
@@ -218,11 +218,11 @@ class SgBusArrivals:
 
     async def get_train_service_alerts(self) -> dict[str, TrainServiceAlert]:
         """Get train service alerts."""
-        alerts: dict[str, list[str]] = {}
+        alerts: dict[str, TrainServiceAlert] = {}
 
         response: Any = await self._get_request("/TrainServiceAlerts")
         value: dict[str, Any] = response["value"]
-        all_messages: list[str] = value["Message"]
+        all_messages: list[dict[str, str]] = value["Message"]
 
         train_lines: list[str] = self.get_train_lines()
         for train_line in train_lines:
