@@ -15,7 +15,8 @@
                 "data_description": {
                     "api_key": "API account key for LTA DataMall API.",
                     "scan_interval": "The frequency to fetch data from the LTA DataMall API. Minimum is 20 seconds."
-                }
+                },
+                "description": "To get your API account key, you will need to [request for LTA DataMall access](https://datamall.lta.gov.sg/content/datamall/en/request-for-api.html)."
             }
         },
         "error": {

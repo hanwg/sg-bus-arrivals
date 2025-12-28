@@ -22,7 +22,8 @@
                 "data_description": {
                     "api_key": "API account key for the LTA DataMall API.",
                     "scan_interval": "The frequency to fetch data from the LTA DataMall API. Minimum is 20 seconds."
-                }
+                },
+                "description": "To get your API account key, you will need to [request for LTA DataMall access](https://datamall.lta.gov.sg/content/datamall/en/request-for-api.html)."
             },
             "reconfigure": {
                 "data": {
@@ -73,7 +74,7 @@
                         "label": "Name of the sensor. This should include the bus stop name and bus service number.",
                         "bus_stop_code": "5-digit bus stop code from the bus stop sign"
                     },
-                    "description": "Adds a new sensor for a bus service at a bus stop."
+                    "description": "Adds a new sensor for a bus service at a bus stop.\nTo find the bus stop code, look for the 5-digit code on the bus stop sign or use the [SimplyGo Travel Guide](https://svc.simplygo.com.sg/eservice/eguide/service_idx.php)."
                 },
                 "service_no": {
                     "title": "Add new bus service",
