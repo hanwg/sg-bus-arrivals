@@ -63,34 +63,20 @@ class SgBusArrivals:
     async def get_bus_stop(self, bus_stop_code: str) -> BusStop | None:
         """Get bus stop information by bus stop code."""
 
-        page: int = 0
-        while page < MAX_PAGES:
-            page = page + 1
+        response: Any = await self._get_request(f"/BusStops?BusStopCode={bus_stop_code}")
 
-            response: Any = await self._get_request(f"/BusStops?page={page}")
+        # Bus stop not found
+        if response["value"] == []:
+            return None
+        
+        # Bus stop found
+        bus_stop = response["value"][0]
 
-            # no more results
-            if response["value"] == []:
-                return None
-
-            # filter by bus stop code
-            bus_stop = next(
-                (
-                    BusStop(
+        return BusStop(
                         bus_stop["BusStopCode"],
                         bus_stop["RoadName"],
                         bus_stop["Description"],
                     )
-                    for bus_stop in response["value"]
-                    if bus_stop["BusStopCode"] == bus_stop_code
-                ),
-                None,
-            )
-
-            if bus_stop:
-                return bus_stop
-
-        return None
 
     async def get_all_bus_services(self) -> dict[str, set[str]]:
         """Get all bus services for all bus stops.
