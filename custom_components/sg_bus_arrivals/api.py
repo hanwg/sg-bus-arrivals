@@ -68,7 +68,7 @@ class SgBusArrivals:
         # Bus stop not found
         if response["value"] == []:
             return None
-        
+
         # Bus stop found
         bus_stop = response["value"][0]
 
@@ -200,6 +200,7 @@ class SgBusArrivals:
             "sel",
             "swl",
             "bpl",
+            "tel",
         ]
 
     async def get_train_service_alerts(self) -> dict[str, TrainServiceAlert]:

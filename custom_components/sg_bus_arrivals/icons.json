@@ -78,6 +78,12 @@
                     "disrupted": "mdi:alert"
                 }
             },
+            "train_service_alerts_tel": {
+                "default": "mdi:train",
+                "state": {
+                    "disrupted": "mdi:alert"
+                }
+            },
             "next_bus_estimated_arrival": {
                 "default": "mdi:bus-clock"
             },

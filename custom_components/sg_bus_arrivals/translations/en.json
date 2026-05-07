@@ -200,6 +200,13 @@
                     "disrupted": "Disrupted"
                 }
             },
+            "train_service_alerts_tel": {
+                "name": "Thomson East Coast Line",
+                "state": {
+                    "normal": "Normal",
+                    "disrupted": "Disrupted"
+                }
+            },
             "next_bus_estimated_arrival": {
                 "name": "Estimated arrival"
             },
