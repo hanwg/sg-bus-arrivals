@@ -124,9 +124,14 @@ class SgBusArrivalsConfigFlow(ConfigFlow, domain=DOMAIN):
 
         sg_bus_arrivals: SgBusArrivals | None = None
         config_entries: list[ConfigEntry[SgBusArrivalsData]] = self._async_current_entries()
-        if config_entries:
-            sg_bus_arrivals_data: SgBusArrivalsData = config_entries[0].runtime_data
-            sg_bus_arrivals = sg_bus_arrivals_data.api
+        runtime_data: SgBusArrivalsData | None = (
+            getattr(config_entries[0], "runtime_data", None)
+            if config_entries
+            else None
+        )
+
+        if runtime_data is not None and getattr(runtime_data, "api", None) is not None:
+            sg_bus_arrivals = runtime_data.api
         else:
             session: ClientSession = async_get_clientsession(self.hass)
             sg_bus_arrivals = SgBusArrivals(session, data[CONF_API_KEY])
